@@ -89,6 +89,59 @@ service cloud.firestore {
     match /products/{productId} {
       allow read: if true;
       allow create, update, delete: if isAdmin();
+
+      // One public star review per verified buyer and product.
+      match /reviews/{reviewUid} {
+        allow get, list: if true;
+
+        function boughtAndDelivered(orderId, itemId) {
+          return signedIn()
+            && orderId is string && orderId.size() > 0
+            && itemId is string && itemId.size() > 0
+            && exists(/databases/$(database)/documents/orders/$(orderId))
+            && get(/databases/$(database)/documents/orders/$(orderId))
+                .data.userId == request.auth.uid
+            && get(/databases/$(database)/documents/orders/$(orderId))
+                .data.orderStatus == 'delivered'
+            && exists(/databases/$(database)/documents/orders/$(orderId)/items/$(itemId))
+            && get(/databases/$(database)/documents/orders/$(orderId)/items/$(itemId))
+                .data.productId == productId;
+        }
+
+        function validContent() {
+          return request.resource.data.stars is int
+            && request.resource.data.stars >= 1
+            && request.resource.data.stars <= 5
+            && request.resource.data.text is string
+            && request.resource.data.text.size() >= 3
+            && request.resource.data.text.size() <= 800;
+        }
+
+        allow create: if isOwner(reviewUid)
+          && request.resource.data.keys().hasOnly([
+            'userId', 'orderId', 'itemId', 'stars', 'text',
+            'createdAt', 'updatedAt'
+          ])
+          && request.resource.data.keys().hasAll([
+            'userId', 'orderId', 'itemId', 'stars', 'text',
+            'createdAt', 'updatedAt'
+          ])
+          && request.resource.data.userId == reviewUid
+          && validContent()
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.updatedAt == request.time
+          && boughtAndDelivered(request.resource.data.orderId,
+                                request.resource.data.itemId);
+
+        allow update: if isOwner(reviewUid)
+          && resource.data.userId == reviewUid
+          && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['stars', 'text', 'updatedAt'])
+          && validContent()
+          && request.resource.data.updatedAt == request.time;
+
+        allow delete: if false;
+      }
     }
 
     match /orders/{orderId} {

@@ -42,6 +42,7 @@ import lk.jiat.butterqueen.data.OrderReceipt;
 import lk.jiat.butterqueen.data.OrderReceiptPdf;
 import lk.jiat.butterqueen.data.OrderSummaryJson;
 import lk.jiat.butterqueen.model.OrderItem;
+import com.google.android.material.button.MaterialButton;
 import lk.jiat.butterqueen.model.UnitPricing;
 
 /** Loads an owned Firestore order and saves its current payment state as a PDF. */
@@ -218,6 +219,20 @@ public final class OrderReceiptActivity extends AppCompatActivity {
                     UnitPricing.quantityLabel(item.getQuantity(), item.getUnitType())
                             + " × " + OrderReceipt.money(item.getUnitPrice())
                             + " = " + OrderReceipt.money(item.getItemTotal()));
+            if (!adminView && "delivered".equals(record.orderStatus)
+                    && item.getProductId() != null && !item.getProductId().isEmpty()
+                    && item.getOrderItemId() != null && !item.getOrderItemId().isEmpty()) {
+                MaterialButton review = new MaterialButton(this);
+                review.setText("★ Rate & Review " + OrderReceipt.value(item.getProductName()));
+                review.setAllCaps(false);
+                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT, dp(52));
+                params.bottomMargin = dp(10);
+                items.addView(review, params);
+                review.setOnClickListener(v -> startActivity(
+                        ProductReviewActivity.forDeliveredOrder(this,
+                                item.getProductId(), record.id, item.getOrderItemId())));
+            }
         }
         ((TextView) findViewById(R.id.receiptTotals)).setText(
                 "Subtotal  " + OrderReceipt.money(record.subtotal) + "\n"

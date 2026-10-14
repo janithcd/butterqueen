@@ -1,6 +1,7 @@
 package lk.jiat.butterqueen.activity;
 
 import android.os.Bundle;
+import com.google.firebase.firestore.DocumentSnapshot;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -33,7 +34,8 @@ public class ProductDetailsActivity extends AppCompatActivity {
     private TextView productNameTextView, categoryTextView, cakeTypeTextView,
             productPriceTextView, productDescriptionTextView, quantityTextView,
             quantitySectionTitle, selectionTotalTextView, availabilityTextView;
-    private MaterialButton addToCartButton;
+    private MaterialButton addToCartButton, viewReviewsButton;
+    private TextView ratingSummaryText;
     private Product selectedProduct;
     private String unitType = UnitPricing.PCS;
     private double quantity = 1.0;
@@ -64,6 +66,12 @@ public class ProductDetailsActivity extends AppCompatActivity {
         selectionTotalTextView = findViewById(R.id.selectionTotalTextView);
         availabilityTextView = findViewById(R.id.availabilityTextView);
         addToCartButton = findViewById(R.id.addToCartButton);
+        viewReviewsButton = findViewById(R.id.viewProductReviewsButton);
+        ratingSummaryText = findViewById(R.id.detailsRatingTextView);
+        viewReviewsButton.setOnClickListener(v -> {
+            if (selectedProduct != null)
+                startActivity(ProductReviewActivity.forProduct(this, selectedProduct.getId()));
+        });
 
         backButton.setOnClickListener(v -> finish());
         wishlistButton.setOnClickListener(v -> {
@@ -135,6 +143,7 @@ public class ProductDetailsActivity extends AppCompatActivity {
         availabilityTextView.setVisibility(available ? View.GONE : View.VISIBLE);
         updateSelection();
         updateWishlistIcon();
+        refreshReviewSummary();
 
         if (selectedProduct.getImageUrl() != null && !selectedProduct.getImageUrl().trim().isEmpty()) {
             Glide.with(this).load(selectedProduct.getImageUrl())
@@ -145,6 +154,40 @@ public class ProductDetailsActivity extends AppCompatActivity {
         } else {
             productImageView.setImageResource(R.drawable.cake_wallpaper);
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (selectedProduct != null) refreshReviewSummary();
+    }
+
+    private void refreshReviewSummary() {
+        if (selectedProduct == null) return;
+        String id = selectedProduct.getId();
+        FirebaseFirestore.getInstance().collection("products").document(id)
+                .collection("reviews").get()
+                .addOnSuccessListener(reviews -> {
+                    if (isFinishing() || isDestroyed() || selectedProduct == null
+                            || !id.equals(selectedProduct.getId())) return;
+                    int count = 0;
+                    long total = 0L;
+                    for (DocumentSnapshot doc : reviews) {
+                        Long stars = doc.getLong("stars");
+                        if (stars != null && stars >= 1 && stars <= 5) {
+                            total += stars;
+                            count++;
+                        }
+                    }
+                    ratingSummaryText.setText(count == 0 ? "★ Not rated yet"
+                            : String.format(Locale.getDefault(),
+                                    "★ %.1f / 5   •   %d review%s",
+                                    (double) total / count, count, count == 1 ? "" : "s"));
+                })
+                .addOnFailureListener(e -> {
+                    if (!isFinishing() && !isDestroyed())
+                        ratingSummaryText.setText("Reviews temporarily unavailable");
+                });
     }
 
     private void updateSelection() {

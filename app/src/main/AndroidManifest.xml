@@ -58,6 +58,9 @@
             android:windowSoftInputMode="adjustResize|stateHidden" />
         <activity android:name=".activity.CustomCakeActivity" android:exported="false" />
         <activity
+            android:name=".activity.ProductReviewActivity"
+            android:exported="false" />
+        <activity
             android:name=".activity.ProductDetailsActivity"
             android:exported="false" />
         <activity
