@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/reviewsRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/md_theme_background"
+    android:fillViewport="true">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+            <ImageButton
+                android:id="@+id/reviewsBack"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:padding="11dp"
+                android:background="@drawable/bg_bq_icon_surface"
+                android:src="@drawable/ic_bq_back"
+                android:contentDescription="Back"
+                android:tint="@color/md_theme_onSurface" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:text="Ratings &amp; Reviews"
+                android:textColor="@color/md_theme_onBackground"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+        <TextView
+            android:id="@+id/reviewsProductName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="22dp"
+            android:text="Product reviews"
+            android:textColor="@color/md_theme_onBackground"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/reviewsAverage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Loading verified customer reviews..."
+            android:textColor="@color/md_theme_primary"
+            android:textSize="17sp" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="@color/md_theme_surfaceContainerLow"
+            app:strokeWidth="1dp"
+            app:strokeColor="@color/md_theme_outlineVariant">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="18dp">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Rate your purchase"
+                    android:textColor="@color/md_theme_onBackground"
+                    android:textSize="19sp"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/reviewEligibilityMessage"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Only delivered purchases can be reviewed."
+                    android:textColor="@color/md_theme_onSurfaceVariant"
+                    android:textSize="13sp" />
+                <RatingBar
+                    android:id="@+id/reviewStars"
+                    style="?android:attr/ratingBarStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:numStars="5"
+                    android:rating="0"
+                    android:stepSize="1.0"
+                    android:contentDescription="Select one to five stars" />
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:hint="Your review">
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/reviewComment"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textCapSentences|textMultiLine"
+                        android:gravity="top|start"
+                        android:maxLength="800"
+                        android:minLines="3"
+                        android:maxLines="6" />
+                </com.google.android.material.textfield.TextInputLayout>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/reviewSubmit"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="16dp"
+                    android:text="Publish Review"
+                    android:textAllCaps="false"
+                    android:enabled="false"
+                    app:cornerRadius="16dp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="26dp"
+            android:layout_marginBottom="12dp"
+            android:text="What customers are saying"
+            android:textColor="@color/md_theme_onBackground"
+            android:textSize="19sp"
+            android:textStyle="bold" />
+        <LinearLayout
+            android:id="@+id/reviewsList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="25dp" />
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>
