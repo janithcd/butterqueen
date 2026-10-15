@@ -15,6 +15,16 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.DocumentSnapshot;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import lk.jiat.butterqueen.data.ProductRatingSummary;
 
 import java.util.List;
 import java.util.Locale;
@@ -37,6 +47,10 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
     private final List<Product> productList;
     private final OnProductClickListener productClickListener;
     private final OnWishlistChangedListener wishlistChangedListener;
+    // Cache avoids briefly flashing a zero rating on recycled cards while
+    // Firestore attaches a new listener. Only visible cards observe Firestore.
+    private final Map<String, ProductRatingSummary> ratingCache = new HashMap<>();
+    private final Set<ProductViewHolder> activeHolders = new HashSet<>();
 
     public ProductAdapter(List<Product> productList,
                           OnProductClickListener productClickListener,
@@ -57,6 +71,10 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
     @Override
     public void onBindViewHolder(@NonNull ProductViewHolder holder, int position) {
         Product product = productList.get(position);
+        holder.stopRatingListener();
+        holder.boundProductId = product.getId();
+        holder.ratingSummaryTextView.setText(getCachedRatingLabel(holder.boundProductId));
+        if (holder.attached) observeRating(holder);
 
         holder.productNameTextView.setText(product.getName());
         String description = product.getDescription() == null ? "" : product.getDescription();
@@ -121,6 +139,72 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
                 gestureDetector.onTouchEvent(event));
     }
 
+    private String getCachedRatingLabel(String productId) {
+        ProductRatingSummary summary = productId == null ? null : ratingCache.get(productId);
+        return summary == null ? ProductRatingSummary.emptyLabel() : summary.label();
+    }
+
+    /**
+     * One live listener per visible card. Listeners are removed when views are
+     * detached/recycled, preventing excessive Firestore reads while scrolling.
+     */
+    private void observeRating(ProductViewHolder holder) {
+        holder.stopRatingListener();
+        final String productId = holder.boundProductId;
+        if (!holder.attached || productId == null || productId.trim().isEmpty()) return;
+        holder.ratingListener = FirebaseFirestore.getInstance()
+                .collection("products").document(productId).collection("reviews")
+                .addSnapshotListener((reviews, error) -> {
+                    if (!holder.attached || !productId.equals(holder.boundProductId)) return;
+                    if (error != null || reviews == null) {
+                        holder.ratingSummaryTextView.setText(
+                                ratingCache.containsKey(productId)
+                                        ? getCachedRatingLabel(productId)
+                                        : "★ Ratings unavailable");
+                        return;
+                    }
+                    ProductRatingSummary summary = new ProductRatingSummary();
+                    for (DocumentSnapshot review : reviews.getDocuments()) {
+                        summary.add(review.getLong("stars"));
+                    }
+                    ratingCache.put(productId, summary);
+                    holder.ratingSummaryTextView.setText(summary.label());
+                });
+    }
+
+    @Override
+    public void onViewAttachedToWindow(@NonNull ProductViewHolder holder) {
+        super.onViewAttachedToWindow(holder);
+        holder.attached = true;
+        activeHolders.add(holder);
+        observeRating(holder);
+    }
+
+    @Override
+    public void onViewDetachedFromWindow(@NonNull ProductViewHolder holder) {
+        holder.attached = false;
+        holder.stopRatingListener();
+        activeHolders.remove(holder);
+        super.onViewDetachedFromWindow(holder);
+    }
+
+    @Override
+    public void onViewRecycled(@NonNull ProductViewHolder holder) {
+        holder.stopRatingListener();
+        holder.boundProductId = null;
+        super.onViewRecycled(holder);
+    }
+
+    @Override
+    public void onDetachedFromRecyclerView(@NonNull RecyclerView recyclerView) {
+        for (ProductViewHolder holder : new HashSet<>(activeHolders)) {
+            holder.attached = false;
+            holder.stopRatingListener();
+        }
+        activeHolders.clear();
+        super.onDetachedFromRecyclerView(recyclerView);
+    }
+
     private void toggleWishlistWithAnimation(ProductViewHolder holder, Product product) {
         boolean isWishlistedNow = WishlistManager.toggleWishlist(product);
         updateWishlistIcon(holder.wishlistButton, isWishlistedNow);
@@ -167,7 +251,18 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         TextView productNameTextView;
         TextView productDescriptionTextView;
         TextView productPriceTextView;
+        TextView ratingSummaryTextView;
         ImageButton wishlistButton;
+        String boundProductId;
+        boolean attached;
+        ListenerRegistration ratingListener;
+
+        void stopRatingListener() {
+            if (ratingListener != null) {
+                ratingListener.remove();
+                ratingListener = null;
+            }
+        }
 
         public ProductViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -175,6 +270,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
             productNameTextView = itemView.findViewById(R.id.cakeNameTextView);
             productDescriptionTextView = itemView.findViewById(R.id.cakeDescriptionTextView);
             productPriceTextView = itemView.findViewById(R.id.cakePriceTextView);
+            ratingSummaryTextView = itemView.findViewById(R.id.cakeRatingTextView);
             wishlistButton = itemView.findViewById(R.id.wishlistButton);
         }
     }
