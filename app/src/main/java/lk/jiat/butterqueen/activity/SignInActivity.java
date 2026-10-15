@@ -46,7 +46,14 @@ public class SignInActivity extends AppCompatActivity {
         });
 
         binding.forgotPasswordText.setOnClickListener(v -> {
-            Toast.makeText(this, "Forgot password screen not added yet", Toast.LENGTH_SHORT).show();
+            Intent reset = new Intent(this, ForgotPasswordActivity.class);
+            if (binding.emailEditText.getText() != null) {
+                reset.putExtra(ForgotPasswordActivity.EXTRA_EMAIL,
+                        binding.emailEditText.getText().toString().trim());
+            }
+            // Do not retain the old password while the user visits a recovery screen.
+            binding.passwordEditText.setText("");
+            startActivity(reset);
         });
     }
 

@@ -64,6 +64,10 @@
             android:name=".activity.ProductDetailsActivity"
             android:exported="false" />
         <activity
+            android:name=".activity.ForgotPasswordActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize|stateHidden" />
+        <activity
             android:name=".activity.SignInActivity"
             android:exported="false" />
         <activity
