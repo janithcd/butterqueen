@@ -19,6 +19,16 @@ public class OrderReceiptTest {
     }
 
     @Test
+    public void sandboxDemoReceiptNeverClaimsRealPayment() {
+        OrderReceipt record = new OrderReceipt();
+        record.paymentMethod = "payhere";
+        record.paymentStatus = "sandbox_demo";
+
+        assertTrue(record.paymentNotice().contains("No real payment"));
+        assertTrue(record.paymentState().contains("not verified"));
+    }
+
+    @Test
     public void cashOnDeliveryReceiptStatesPaymentDue() {
         OrderReceipt record = new OrderReceipt();
         record.paymentMethod = "cash_on_delivery";
