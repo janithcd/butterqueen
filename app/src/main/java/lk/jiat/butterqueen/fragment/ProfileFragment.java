@@ -13,9 +13,11 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.accessibility.AccessibilityManager;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -45,6 +47,7 @@ import lk.jiat.butterqueen.R;
 import lk.jiat.butterqueen.data.LocalProfilePhotoStore;
 import lk.jiat.butterqueen.activity.MainActivity;
 import lk.jiat.butterqueen.activity.SignInActivity;
+import lk.jiat.butterqueen.ui.HoldToConfirmTouch;
 
 public class ProfileFragment extends Fragment {
 
@@ -58,6 +61,8 @@ public class ProfileFragment extends Fragment {
     private MaterialButton changePhotoButton;
     private MaterialButton updateProfileButton;
     private MaterialButton deleteAccountButton;
+    private HoldToConfirmTouch deleteHold;
+    private boolean deletionInProgress;
 
     private FirebaseAuth firebaseAuth;
     private FirebaseFirestore firebaseFirestore;
@@ -138,7 +143,28 @@ public class ProfileFragment extends Fragment {
 
         updateProfileButton.setOnClickListener(v -> updateProfile());
 
-        deleteAccountButton.setOnClickListener(v -> showDeleteAccountDialog());
+        ProgressBar deleteHoldProgress = view.findViewById(R.id.deleteHoldProgress);
+        TextView deleteHoldHint = view.findViewById(R.id.deleteHoldHint);
+        deleteHold = new HoldToConfirmTouch(deleteAccountButton, deleteHoldProgress,
+                deleteHoldHint);
+        deleteAccountButton.setOnTouchListener(deleteHold);
+        deleteAccountButton.setOnClickListener(v -> {
+            if (deletionInProgress) return;
+            boolean heldFiveSeconds = deleteHold != null && deleteHold.consumeArmed();
+            // Touch-exploration users cannot perform a continuous raw gesture;
+            // the final destructive confirmation dialog remains mandatory.
+            AccessibilityManager accessibility = (AccessibilityManager)
+                    requireContext().getSystemService(Context.ACCESSIBILITY_SERVICE);
+            boolean touchExploration = accessibility != null
+                    && accessibility.isEnabled()
+                    && accessibility.isTouchExplorationEnabled();
+            if (heldFiveSeconds || touchExploration) {
+                showDeleteAccountDialog();
+            } else {
+                Toast.makeText(requireContext(), "Hold for 5 seconds to unlock deletion",
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
 
         return view;
     }
@@ -372,7 +398,17 @@ public class ProfileFragment extends Fragment {
     }
 
     @Override
+    public void onStop() {
+        if (deleteHold != null) deleteHold.cancel();
+        super.onStop();
+    }
+
+    @Override
     public void onDestroyView() {
+        if (deleteHold != null) {
+            deleteHold.dispose();
+            deleteHold = null;
+        }
         if (profileRegistration != null) {
             profileRegistration.remove();
             profileRegistration = null;
@@ -388,43 +424,62 @@ public class ProfileFragment extends Fragment {
 
     private void showDeleteAccountDialog() {
         new AlertDialog.Builder(requireContext())
-                .setTitle("Delete Account")
-                .setMessage("Are you sure you want to permanently delete your account?")
-                .setPositiveButton("Delete", (dialog, which) -> deleteAccount())
+                .setTitle("Confirm account deletion")
+                .setMessage("You completed the 5-second hold. Delete your Butter Queen " +
+                        "sign-in account permanently? This cannot be undone. " +
+                        "Existing orders and reviews may remain until separate " +
+                        "server-side cleanup is available. You may need to sign in again first.")
+                .setPositiveButton("Delete account", (dialog, which) -> deleteAccount())
                 .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
                 .show();
     }
 
     private void deleteAccount() {
+        if (deletionInProgress) return;
         if (firebaseAuth.getCurrentUser() == null) {
             Toast.makeText(requireContext(), "User not logged in", Toast.LENGTH_SHORT).show();
             return;
         }
 
         String userId = firebaseAuth.getCurrentUser().getUid();
+        Context applicationContext = requireContext().getApplicationContext();
+        deletionInProgress = true;
+        deleteAccountButton.setEnabled(false);
+        deleteAccountButton.setText("Deleting sign-in account...");
 
         firebaseAuth.getCurrentUser()
                 .delete()
                 .addOnSuccessListener(unused -> {
-                    firebaseFirestore.collection("users")
-                            .document(userId)
-                            .delete();
-
-                    LocalProfilePhotoStore.delete(requireContext(), userId);
+                    // Existing data cleanup is best-effort; security rules do
+                    // not currently allow a customer to delete their profile
+                    // document after their Firebase Authentication is removed.
+                    // A full recursive deletion requires a trusted backend.
+                    firebaseFirestore.collection("users").document(userId)
+                            .delete().addOnFailureListener(error ->
+                                    android.util.Log.w("ButterQueenProfile",
+                                            "User data requires server cleanup", error));
+                    LocalProfilePhotoStore.delete(applicationContext, userId);
                     firebaseAuth.signOut();
 
-                    Toast.makeText(requireContext(), "Account deleted", Toast.LENGTH_SHORT).show();
+                    if (!isAdded()) return;
+                    Toast.makeText(requireContext(),
+                            "Sign-in account deleted. Some stored records may remain.",
+                            Toast.LENGTH_LONG).show();
 
                     Intent intent = new Intent(requireContext(), SignInActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
                     requireActivity().finish();
                 })
-                .addOnFailureListener(e -> Toast.makeText(
-                        requireContext(),
-                        "Delete failed. Please log in again and retry.",
-                        Toast.LENGTH_LONG
-                ).show());
+                .addOnFailureListener(e -> {
+                    deletionInProgress = false;
+                    if (!isAdded()) return;
+                    if (deleteHold != null) deleteHold.cancel();
+                    deleteAccountButton.setEnabled(true);
+                    Toast.makeText(requireContext(),
+                            "Delete failed. Please sign in again recently and retry.",
+                            Toast.LENGTH_LONG).show();
+                });
     }
 
     private void showDatePicker() {
