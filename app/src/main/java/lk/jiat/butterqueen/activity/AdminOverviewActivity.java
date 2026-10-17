@@ -555,30 +555,62 @@ public class AdminOverviewActivity extends AppCompatActivity {
         }
     }
 
-    private void chooseStatus(DocumentSnapshot order) {
+    private void chooseStatus(DocumentSnapshot cachedOrder) {
+        // The overview snapshot may be old by the time PayHere verifies a
+        // payment. Always read the current server value before showing choices.
+        db.collection("orders").document(cachedOrder.getId()).get(Source.SERVER)
+                .addOnSuccessListener(order -> {
+                    if (isFinishing() || isDestroyed()) return;
+                    if (!order.exists()) {
+                        Toast.makeText(this, "Order no longer exists", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                    showStatusChoices(order);
+                })
+                .addOnFailureListener(e -> Toast.makeText(this,
+                        "Could not refresh order payment status", Toast.LENGTH_LONG).show());
+    }
+
+    private void showStatusChoices(DocumentSnapshot order) {
         String method = order.getString("paymentMethod");
         String payment = order.getString("paymentStatus");
         boolean awaitingPayment = "payhere".equals(method) && !"paid".equals(payment);
-        String[] codes = awaitingPayment
-                ? new String[]{"payment_pending", "cancelled"}
-                : new String[]{"placed", "preparing", "out_for_delivery", "delivered", "cancelled"};
-        String[] labels = awaitingPayment
-                ? new String[]{"Payment verification pending", "Cancelled"}
-                : new String[]{"Placed", "Preparing", "Out for delivery", "Delivered", "Cancelled"};
+        if (awaitingPayment) {
+            String reference = order.getString("paymentReference");
+            String shortId = order.getId().substring(0, Math.min(8, order.getId().length()));
+            new AlertDialog.Builder(this)
+                    .setTitle("Card payment not verified")
+                    .setMessage("Order #" + shortId + " cannot be prepared or delivered " +
+                            "until PayHere confirms its payment.\\n\\n" +
+                            "Payment status: " + (payment == null ? "Unknown" : payment) +
+                            "\\nPayHere reference: " + (reference == null ? "Unavailable" : reference) +
+                            "\\n\\nCheck the transaction in PayHere, then tap Refresh. " +
+                            "This screen cannot confirm a payment.")
+                    .setNegativeButton("Close", null)
+                    .setNeutralButton("Cancel order", (d, w) ->
+                            confirmStatusChange(order, "cancelled", "Cancelled"))
+                    .setPositiveButton("Refresh", (d, w) -> chooseStatus(order))
+                    .show();
+            return;
+        }
+        String[] codes = {"placed", "preparing", "out_for_delivery", "delivered", "cancelled"};
+        String[] labels = {"Placed", "Preparing", "Out for delivery", "Delivered", "Cancelled"};
         new AlertDialog.Builder(this)
                 .setTitle("Set order status")
-                .setItems(labels, (dialog, selected) -> {
-                    String code = codes[selected];
-                    if (code.equals(order.getString("orderStatus"))) return;
-                    new AlertDialog.Builder(this)
-                            .setTitle("Confirm status change")
-                            .setMessage("Change order #" + order.getId().substring(0,
-                                    Math.min(8, order.getId().length())) + " to "
-                                    + labels[selected] + "?")
-                            .setNegativeButton("Cancel", null)
-                            .setPositiveButton("Update", (d, w) -> updateStatus(order.getId(), code))
-                            .show();
-                }).show();
+                .setItems(labels, (dialog, selected) ->
+                        confirmStatusChange(order, codes[selected], labels[selected]))
+                .show();
+    }
+
+    private void confirmStatusChange(DocumentSnapshot order, String code, String label) {
+        if (code.equals(order.getString("orderStatus"))) return;
+        new AlertDialog.Builder(this)
+                .setTitle("Confirm status change")
+                .setMessage("Change order #" + order.getId().substring(0,
+                        Math.min(8, order.getId().length())) + " to " + label + "?")
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton("Update", (d, w) -> updateStatus(order.getId(), code))
+                .show();
     }
 
     private void updateStatus(String orderId, String code) {
