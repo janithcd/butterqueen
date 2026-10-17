@@ -607,7 +607,7 @@ public class CheckoutActivity extends AppCompatActivity {
 
         new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
                 .setTitle(sdkSuccess ? "Payment submitted" : "Payment not confirmed")
-                .setMessage(message + "\\n\\nReference: " + pendingPaymentReference)
+                .setMessage(message + "\n\nReference: " + pendingPaymentReference)
                 .setCancelable(false)
                 .setPositiveButton("View orders later", (dialog, which) -> finish())
                 .show();
