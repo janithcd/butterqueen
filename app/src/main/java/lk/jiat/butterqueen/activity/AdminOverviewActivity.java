@@ -234,6 +234,11 @@ public class AdminOverviewActivity extends AppCompatActivity {
                 () -> startActivity(new Intent(this, AdminCustomCakeRequestsActivity.class)), true);
         action(more, "Sales Reports", false,
                 () -> startActivity(new Intent(this, AdminSalesReportsActivity.class)), false);
+        LinearLayout catalogTools = row(root, 9);
+        action(catalogTools, "Categories", false,
+                () -> startActivity(new Intent(this, AdminCategoriesActivity.class)), true);
+        action(catalogTools, "Reviews", false,
+                () -> startActivity(new Intent(this, AdminReviewsActivity.class)), false);
 
         addText(root, "Business insights", 19,
                 R.color.md_theme_onBackground, true, 24);
