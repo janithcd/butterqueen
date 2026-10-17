@@ -1,99 +1,114 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView
-            style="@style/Widget.ButterQueen.Card" xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:minHeight="144dp"
-    android:layout_marginBottom="12dp"
-    app:cardCornerRadius="20dp"
-    app:cardElevation="0dp" app:cardBackgroundColor="@color/md_theme_surfaceContainerLow" app:strokeColor="@color/md_theme_outlineVariant" app:strokeWidth="1dp">
-
+    android:layout_marginBottom="14dp"
+    android:minHeight="180dp"
+    app:cardCornerRadius="24dp"
+    app:cardElevation="1dp"
+    app:strokeColor="@color/md_theme_outlineVariant"
+    app:strokeWidth="1dp"
+    app:cardBackgroundColor="@color/md_theme_surfaceContainerLowest">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="144dp"
+        android:minHeight="180dp"
         android:orientation="horizontal">
-
         <FrameLayout
-            android:layout_width="116dp"
-            android:layout_height="144dp">
-
+            android:layout_width="136dp"
+            android:layout_height="180dp">
             <ImageView
                 android:id="@+id/cakeImageView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:contentDescription="Cake Image"
+                android:src="@drawable/cake_wallpaper"
                 android:scaleType="centerCrop"
-                android:src="@drawable/cake_wallpaper" />
-
+                android:contentDescription="Product photograph"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="9dp"
+                android:paddingStart="9dp"
+                android:paddingEnd="9dp"
+                android:paddingTop="6dp"
+                android:paddingBottom="6dp"
+                android:text="✦ FRESH"
+                android:textStyle="bold"
+                android:textSize="9sp"
+                android:textColor="@color/md_theme_onPrimaryContainer"
+                android:background="@drawable/bg_bq_photo_tag"/>
             <ImageButton
                 android:id="@+id/wishlistButton"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="46dp"
+                android:layout_height="46dp"
                 android:layout_gravity="top|end"
-                android:layout_margin="8dp"
-                android:background="@drawable/bg_bq_icon_surface"
-                android:contentDescription="Wishlist"
-                android:padding="12dp"
+                android:layout_margin="9dp"
+                android:padding="11dp"
+                android:background="@drawable/bg_bq_bell_surface"
                 android:src="@drawable/ic_bq_favorite"
-                android:tint="@color/md_theme_onSurface" />
-
+                android:contentDescription="Add or remove from wishlist"
+                android:tint="@color/md_theme_onSurface"/>
         </FrameLayout>
-
         <LinearLayout
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:layout_height="match_parent"
             android:gravity="center_vertical"
-            android:orientation="vertical"
-            android:padding="12dp">
-
+            android:paddingStart="15dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:orientation="vertical">
             <TextView
                 android:id="@+id/cakeNameTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:maxLines="2"
                 android:ellipsize="end"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
                 android:text="Chocolate Dream Cake"
-                android:textColor="@color/md_theme_onBackground"
-                android:textSize="16sp"
-                android:textStyle="bold" />
-
+                android:textColor="@color/md_theme_onSurface"
+                android:textSize="17sp"
+                android:textStyle="bold"/>
             <TextView
                 android:id="@+id/cakeDescriptionTextView"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
                 android:maxLines="2"
-                android:text="Rich creamy chocolate with soft layers"
-                android:textColor="@color/md_theme_onBackground"
-                android:textSize="12sp"
-                android:alpha="0.75" />
-
+                android:ellipsize="end"
+                android:layout_marginTop="5dp"
+                android:text="Soft layers of chocolate bliss"
+                android:textColor="@color/md_theme_onSurfaceVariant"
+                android:textSize="12sp"/>
             <TextView
                 android:id="@+id/cakeRatingTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="9dp"
                 android:text="★ — / 5  •  0 reviews"
-                android:textColor="@color/md_theme_primary"
-                android:textSize="13sp"
-                android:textStyle="bold"
-                android:contentDescription="Product average rating and review count" />
-
+                android:textColor="@color/md_theme_tertiary"
+                android:textSize="12sp"
+                android:maxLines="1"
+                android:ellipsize="end"/>
             <TextView
                 android:id="@+id/cakePriceTextView"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="Rs. 2500.00"
+                android:layout_marginTop="9dp"
+                android:text="Rs. 2,500.00"
                 android:textColor="@color/md_theme_primary"
-                android:textSize="15sp"
-                android:textStyle="bold" />
-
+                android:textSize="17sp"
+                android:textStyle="bold"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:text="VIEW DETAILS   →"
+                android:textColor="@color/md_theme_onSurfaceVariant"
+                android:letterSpacing="0.12"
+                android:textSize="10sp"
+                android:textStyle="bold"/>
         </LinearLayout>
-
     </LinearLayout>
-
 </com.google.android.material.card.MaterialCardView>

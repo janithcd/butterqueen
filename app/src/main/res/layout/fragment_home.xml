@@ -3,283 +3,367 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/md_theme_background"
-    android:fillViewport="true">
-
+    android:fillViewport="true"
+    android:clipToPadding="false"
+    android:background="@color/md_theme_background">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="18dp">
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="28dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:orientation="horizontal">
-            <TextView
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Good things are baking"
-                android:maxLines="2"
-                android:ellipsize="end"
-                android:textColor="@color/md_theme_onSurface"
-                android:textSize="24sp"
-                android:textStyle="bold" />
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="B U T T E R   Q U E E N"
+                    android:textColor="@color/md_theme_primary"
+                    android:letterSpacing="0.13"
+                    android:textSize="11sp"
+                    android:textStyle="bold"/>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="7dp"
+                    android:text="A little sweetness,\nevery day."
+                    android:lineSpacingExtra="2dp"
+                    android:textColor="@color/md_theme_onBackground"
+                    android:textSize="29sp"
+                    android:textStyle="bold"/>
+            </LinearLayout>
             <FrameLayout
                 android:id="@+id/customerNotificationBellHost"
                 android:layout_width="56dp"
-                android:layout_height="56dp" />
+                android:layout_height="56dp"
+                android:layout_gravity="top"
+                android:background="@drawable/bg_bq_bell_surface"/>
         </LinearLayout>
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="16dp"
-            android:text="Made with love, enjoyed in every bite"
+            android:layout_marginTop="9dp"
+            android:layout_marginBottom="20dp"
+            android:text="Handcrafted cakes for all your favorite moments."
             android:textColor="@color/md_theme_onSurfaceVariant"
-            android:textSize="14sp" />
+            android:textSize="14sp"/>
 
         <EditText
             android:id="@+id/searchEditText"
-            android:singleLine="true"
-            android:imeOptions="actionSearch"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:layout_marginBottom="16dp"
-            android:background="@drawable/custom_input_search"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/bg_bq_search_premium"
             android:drawableStart="@drawable/ic_bq_search"
-            android:drawablePadding="8dp"
-            android:drawableTint="@color/md_theme_onSurfaceVariant"
-            android:hint="Search cakes, cupcakes, brownies"
+            android:drawableTint="@color/md_theme_primary"
+            android:drawablePadding="12dp"
+            android:hint="Search your next favorite treat"
+            android:inputType="text"
+            android:imeOptions="actionSearch"
+            android:singleLine="true"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
             android:textColor="@color/md_theme_onSurface"
             android:textColorHint="@color/md_theme_onSurfaceVariant"
-            android:inputType="text"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:textSize="14sp" />
+            android:textSize="14sp"/>
 
         <com.google.android.material.card.MaterialCardView
-            style="@style/Widget.ButterQueen.Card"
             android:layout_width="match_parent"
-            android:layout_height="220dp"
-            android:layout_marginBottom="20dp"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="0dp">
-
+            android:layout_height="304dp"
+            android:layout_marginBottom="18dp"
+            app:cardCornerRadius="30dp"
+            app:cardElevation="5dp"
+            app:cardBackgroundColor="@color/md_theme_primary">
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
-
                 <ImageView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:contentDescription="Cake Banner"
+                    android:src="@drawable/cake_wallpaper"
                     android:scaleType="centerCrop"
-                    android:src="@drawable/cake_wallpaper" />
-
+                    android:contentDescription="Beautiful Butter Queen celebration cake"/>
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:background="@drawable/bg_bq_hero_scrim" />
-
+                    android:background="@drawable/bg_bq_hero_scrim"/>
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:gravity="bottom"
                     android:orientation="vertical"
-                    android:padding="18dp">
-
+                    android:padding="22dp">
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Freshly baked happiness"
-                        android:textColor="@android:color/white"
-                        android:textSize="22sp"
-                        android:textStyle="bold" />
-
+                        android:background="@drawable/bg_bq_hero_pill"
+                        android:text="✦  THE SWEETEST MOMENTS"
+                        android:textSize="10sp"
+                        android:letterSpacing="0.07"
+                        android:textStyle="bold"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="14dp"
+                        android:paddingTop="10dp"
+                        android:paddingBottom="10dp"
+                        android:textColor="@android:color/white"/>
+                    <Space
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"/>
                     <TextView
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="Custom cakes made with love"
+                        android:text="Every celebration\ndeserves a little magic."
+                        android:lineSpacingExtra="3dp"
+                        android:maxLines="3"
                         android:textColor="@android:color/white"
-                        android:textSize="13sp" />
-
+                        android:textSize="25sp"
+                        android:textStyle="bold"/>
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="7dp"
+                        android:text="Freshly baked. Beautifully finished."
+                        android:textSize="13sp"
+                        android:textColor="@android:color/white"/>
                     <com.google.android.material.button.MaterialButton
-            style="@style/Widget.ButterQueen.Button.Primary"
                         android:id="@+id/orderNowButton"
+                        style="@style/Widget.ButterQueen.Button.Primary"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:text="Order Now"
+                        android:layout_height="52dp"
+                        android:layout_marginTop="17dp"
+                        android:text="Explore our treats  →"
                         android:textAllCaps="false"
-                        app:cornerRadius="16dp" />
+                        android:textStyle="bold"
+                        app:cornerRadius="18dp"
+                        app:backgroundTint="@color/md_theme_primaryContainer"
+                        android:textColor="@color/md_theme_onPrimaryContainer"/>
                 </LinearLayout>
-
             </FrameLayout>
-
         </com.google.android.material.card.MaterialCardView>
 
-        <com.google.android.material.button.MaterialButton
-            style="@style/Widget.ButterQueen.Button.Primary"
-            android:id="@+id/customCakeButton"
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:text="Request a Custom Cake"
-            android:textAllCaps="false" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/myCustomCakeRequestsButton"
-            style="@style/Widget.ButterQueen.Button.Outlined"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="18dp"
-            android:text="My Custom Cake Requests"
-            android:textAllCaps="false" />
+            android:layout_marginBottom="28dp"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="@color/md_theme_outlineVariant"
+            app:cardBackgroundColor="@color/md_theme_surfaceContainerLow">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="18dp"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="✧  MADE JUST FOR YOU"
+                    android:textColor="@color/md_theme_primary"
+                    android:letterSpacing="0.09"
+                    android:textStyle="bold"
+                    android:textSize="10sp"/>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="7dp"
+                    android:text="Dreaming of your own cake?"
+                    android:textColor="@color/md_theme_onSurface"
+                    android:textStyle="bold"
+                    android:textSize="19sp"/>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Tell us your idea. We'll make it special."
+                    android:textColor="@color/md_theme_onSurfaceVariant"
+                    android:textSize="13sp"/>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="12dp">
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/customCakeButton"
+                        style="@style/Widget.ButterQueen.Button.Primary"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="50dp"
+                        android:text="Design a cake"
+                        android:textAllCaps="false"/>
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/myCustomCakeRequestsButton"
+                        style="@style/Widget.ButterQueen.Button.Outlined"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="50dp"
+                        android:layout_marginStart="8dp"
+                        android:text="My requests"
+                        android:textAllCaps="false"/>
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            android:text="Shop by category"
+            android:text="Discover by category"
             android:textColor="@color/md_theme_onBackground"
-            android:textSize="20sp"
-            android:textStyle="bold" />
-
+            android:textSize="22sp"
+            android:textStyle="bold"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="16dp"
+            android:text="Find the right sweetness for you"
+            android:textColor="@color/md_theme_onSurfaceVariant"
+            android:textSize="13sp"/>
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerViewHomeCategories"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
+            android:layout_marginBottom="26dp"
             android:clipToPadding="false"
             android:nestedScrollingEnabled="false"
-            android:paddingEnd="8dp" />
+            android:paddingEnd="8dp"/>
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:text="Cake occasions"
+            android:layout_marginBottom="12dp"
+            android:text="Shop by occasion"
             android:textColor="@color/md_theme_onBackground"
-            android:textSize="16sp"
-            android:textStyle="bold" />
-
+            android:textSize="18sp"
+            android:textStyle="bold"/>
         <com.google.android.material.chip.ChipGroup
             android:id="@+id/cakeOccasionChips"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="18dp"
+            android:layout_marginBottom="24dp"
             app:singleSelection="true"
-            app:selectionRequired="true">
+            app:selectionRequired="true"
+            app:chipSpacingHorizontal="8dp">
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipAllOccasions"
                 style="@style/Widget.Material3.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checked="true"
-                android:text="All" />
+                android:text="All treats"/>
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipBirthday"
                 style="@style/Widget.Material3.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Birthday cakes" />
+                android:text="Birthday"/>
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipWedding"
                 style="@style/Widget.Material3.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Wedding cakes" />
+                android:text="Wedding"/>
         </com.google.android.material.chip.ChipGroup>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
             android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <TextView
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp">
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Our baked treats"
-                android:textColor="@color/md_theme_onBackground"
-                android:textSize="18sp"
-                android:textStyle="bold" />
-
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Fresh from our oven"
+                    android:textColor="@color/md_theme_onBackground"
+                    android:textSize="22sp"
+                    android:textStyle="bold"/>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="A little indulgence, made for you."
+                    android:textColor="@color/md_theme_onSurfaceVariant"
+                    android:textSize="13sp"/>
+            </LinearLayout>
             <TextView
                 android:id="@+id/seeAllTextView"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:minHeight="48dp"
+                android:layout_height="48dp"
                 android:gravity="center"
                 android:paddingStart="12dp"
                 android:paddingEnd="12dp"
                 android:contentDescription="Show all products and clear filters"
-                android:text="See all"
+                android:text="View all  →"
                 android:textColor="@color/md_theme_primary"
                 android:textSize="13sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"/>
         </LinearLayout>
-
         <ProgressBar
             android:id="@+id/homeProductsProgress"
             style="?android:attr/progressBarStyle"
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="12dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
             android:indeterminateTint="@color/md_theme_primary"
-            android:visibility="gone" />
-
+            android:visibility="gone"/>
         <LinearLayout
-        android:id="@+id/emptyProductsGroup"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="220dp"
-        android:layout_marginTop="16dp"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:padding="24dp"
-        android:visibility="gone">
-        <ImageView
-            android:layout_width="52dp"
-            android:layout_height="52dp"
-            android:src="@drawable/ic_bq_search"
-            android:tint="@color/md_theme_primary"
-            android:importantForAccessibility="no" />
-        <TextView
-            android:id="@+id/emptyProductsTextView"
+            android:id="@+id/emptyProductsGroup"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
+            android:minHeight="220dp"
             android:gravity="center"
-            android:text="No treats match your search yet."
-            android:textColor="@color/md_theme_onSurfaceVariant"
-            android:textSize="15sp" />
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/emptyProductsActionButton"
-            style="@style/Widget.ButterQueen.Button.Outlined"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:text="Clear filters" />
-    </LinearLayout>
-
+            android:orientation="vertical"
+            android:padding="24dp"
+            android:visibility="gone">
+            <ImageView
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:src="@drawable/ic_bq_search"
+                android:tint="@color/md_theme_primary"
+                android:importantForAccessibility="no"/>
+            <TextView
+                android:id="@+id/emptyProductsTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:gravity="center"
+                android:text="No treats match your search yet."
+                android:textColor="@color/md_theme_onSurfaceVariant"
+                android:textSize="15sp"/>
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/emptyProductsActionButton"
+                style="@style/Widget.ButterQueen.Button.Outlined"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:text="Clear filters"/>
+        </LinearLayout>
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerViewCakes"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:clipToPadding="false"
             android:nestedScrollingEnabled="false"
-            android:paddingBottom="12dp" />
-
+            android:paddingBottom="12dp"/>
     </LinearLayout>
-
 </androidx.core.widget.NestedScrollView>

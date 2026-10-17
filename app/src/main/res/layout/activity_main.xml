@@ -36,10 +36,15 @@
             style="@style/Widget.ButterQueen.BottomNavigation"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_bq_bottom_bar"
+            android:elevation="12dp"
             app:labelVisibilityMode="labeled"
             app:itemHorizontalTranslationEnabled="false"
             app:itemIconSize="24dp"
-            android:minHeight="64dp"
+            android:minHeight="72dp"
             app:menu="@menu/bottom_nav_menu" />
 
     </LinearLayout>
