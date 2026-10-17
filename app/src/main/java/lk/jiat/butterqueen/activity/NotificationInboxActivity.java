@@ -6,6 +6,8 @@ import android.os.Build;
 import android.content.pm.PackageManager;
 import androidx.core.app.ActivityCompat;
 import android.graphics.Typeface;
+import android.content.res.ColorStateList;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
@@ -77,22 +79,34 @@ public final class NotificationInboxActivity extends AppCompatActivity {
             return insets;
         });
         ViewCompat.requestApplyInsets(root);
+        TextView brand = text("B U T T E R   Q U E E N   /   UPDATES", 11, true);
+        brand.setTextColor(color(R.color.md_theme_primary));
+        LinearLayout.LayoutParams bp = new LinearLayout.LayoutParams(-1, -2);
+        bp.topMargin = dp(15);
+        root.addView(brand, bp);
         LinearLayout header = new LinearLayout(this);
         header.setGravity(Gravity.CENTER_VERTICAL);
-        root.addView(header, new LinearLayout.LayoutParams(-1, dp(64)));
+        root.addView(header, new LinearLayout.LayoutParams(-1, dp(76)));
         MaterialButton back = new MaterialButton(this);
         back.setText("‹ Back");
         back.setAllCaps(false);
-        header.addView(back, new LinearLayout.LayoutParams(dp(92), dp(48)));
+        back.setCornerRadius(dp(16));
+        back.setTextColor(color(R.color.md_theme_primary));
+        back.setBackgroundTintList(ColorStateList.valueOf(
+                color(R.color.md_theme_surfaceContainerLow)));
+        LinearLayout.LayoutParams backParams =
+                new LinearLayout.LayoutParams(dp(92), dp(48));
+        backParams.rightMargin = dp(12);
+        header.addView(back, backParams);
         back.setOnClickListener(v -> finish());
-        TextView title = text("Notifications", 23, true);
+        TextView title = text("Your activity", 26, true);
         header.addView(title);
-        TextView subtitle = text("New updates are marked as read when you open this page", 12, false);
+        TextView subtitle = text("Fresh news, orders & lovely little updates.", 14, false);
         subtitle.setTextColor(color(R.color.md_theme_onSurfaceVariant));
         root.addView(subtitle);
         ScrollView scroll = new ScrollView(this);
         LinearLayout.LayoutParams sc = new LinearLayout.LayoutParams(-1, 0, 1);
-        sc.topMargin = dp(15);
+        sc.topMargin = dp(22);
         root.addView(scroll, sc);
         content = new LinearLayout(this);
         content.setOrientation(LinearLayout.VERTICAL);
@@ -184,16 +198,40 @@ public final class NotificationInboxActivity extends AppCompatActivity {
     private void renderAll() {
         content.removeAllViews();
         if (cloudDocs.isEmpty() && cakeDocs.isEmpty()) {
-            content.addView(text("You're all caught up! New updates will appear here.", 15, false));
+            MaterialCardView empty = new MaterialCardView(this);
+            empty.setRadius(dp(26));
+            empty.setCardElevation(0);
+            empty.setCardBackgroundColor(color(R.color.md_theme_surfaceContainerLow));
+            empty.setStrokeWidth(dp(1));
+            empty.setStrokeColor(color(R.color.md_theme_outlineVariant));
+            content.addView(empty, new LinearLayout.LayoutParams(-1, -2));
+            LinearLayout box = new LinearLayout(this);
+            box.setPadding(dp(24), dp(42), dp(24), dp(42));
+            box.setOrientation(LinearLayout.VERTICAL);
+            box.setGravity(Gravity.CENTER);
+            empty.addView(box);
+            TextView icon = text("♡", 42, false);
+            icon.setTextColor(color(R.color.md_theme_primary));
+            box.addView(icon);
+            TextView heading = text("All caught up!", 21, true);
+            LinearLayout.LayoutParams hp = new LinearLayout.LayoutParams(-2, -2);
+            hp.topMargin = dp(12);
+            box.addView(heading, hp);
+            TextView note = text("New bakery updates will appear right here.", 14, false);
+            note.setGravity(Gravity.CENTER);
+            note.setTextColor(color(R.color.md_theme_onSurfaceVariant));
+            LinearLayout.LayoutParams np = new LinearLayout.LayoutParams(-1, -2);
+            np.topMargin = dp(8);
+            box.addView(note, np);
             return;
         }
         // Merge both sources without losing the original Firestore inbox.
         class Entry {
-            String title, body;
+            String title, body, type;
             long timestamp;
             Runnable action;
-            Entry(String title, String body, long timestamp, Runnable action) {
-                this.title = title; this.body = body;
+            Entry(String title, String body, String type, long timestamp, Runnable action) {
+                this.title = title; this.body = body; this.type = type;
                 this.timestamp = timestamp; this.action = action;
             }
         }
@@ -201,44 +239,76 @@ public final class NotificationInboxActivity extends AppCompatActivity {
         for (DocumentSnapshot doc : cloudDocs) {
             Long when = doc.getLong("createdAtMillis");
             entries.add(new Entry(doc.getString("title"), doc.getString("body"),
-                    when == null ? 0L : when, () -> openTarget(doc)));
+                    doc.getString("type"), when == null ? 0L : when,
+                    () -> openTarget(doc)));
         }
         for (SparkCakeNotifications.Notice notice : cakeDocs) {
-            entries.add(new Entry(notice.title, notice.body, notice.atMillis,
+            entries.add(new Entry(notice.title, notice.body, notice.type, notice.atMillis,
                     () -> openCake(notice)));
         }
         Collections.sort(entries, (left, right) -> Long.compare(right.timestamp, left.timestamp));
+        int index = 0;
         for (Entry entry : entries) {
-            String title = entry.title;
-            String body = entry.body;
             MaterialCardView card = new MaterialCardView(this);
-            card.setRadius(dp(18));
+            card.setRadius(dp(22));
             card.setCardElevation(0);
-            card.setCardBackgroundColor(color(R.color.md_theme_surfaceContainerLow));
+            card.setCardBackgroundColor(color(R.color.md_theme_surfaceContainerLowest));
             card.setStrokeColor(color(R.color.md_theme_outlineVariant));
             card.setStrokeWidth(dp(1));
             LinearLayout.LayoutParams cp = new LinearLayout.LayoutParams(-1, -2);
             cp.bottomMargin = dp(12);
             content.addView(card, cp);
-            LinearLayout item = new LinearLayout(this);
-            item.setOrientation(LinearLayout.VERTICAL);
-            item.setPadding(dp(16), dp(14), dp(16), dp(14));
-            card.addView(item);
-            TextView heading = text(title == null ? "Butter Queen" : title, 16, true);
-            item.addView(heading);
-            TextView detail = text(body == null ? "" : body, 13, false);
+
+            LinearLayout row = new LinearLayout(this);
+            row.setOrientation(LinearLayout.HORIZONTAL);
+            row.setGravity(Gravity.TOP);
+            row.setPadding(dp(14), dp(16), dp(14), dp(16));
+            card.addView(row);
+
+            String symbol = "✦";
+            if ("new_order".equals(entry.type) || "admin_new".equals(entry.type)
+                    || "customer_sent".equals(entry.type)) symbol = "♡";
+            if ("order_status".equals(entry.type) || "customer_status".equals(entry.type)
+                    || "custom_status".equals(entry.type)) symbol = "✓";
+            if ("new_product".equals(entry.type)) symbol = "★";
+            TextView icon = text(symbol, 20, true);
+            icon.setTextColor(color(R.color.md_theme_primary));
+            icon.setGravity(Gravity.CENTER);
+            GradientDrawable circle = new GradientDrawable();
+            circle.setColor(color(R.color.md_theme_primaryContainer));
+            circle.setCornerRadius(dp(17));
+            icon.setBackground(circle);
+            LinearLayout.LayoutParams ip = new LinearLayout.LayoutParams(dp(50), dp(50));
+            ip.rightMargin = dp(13);
+            row.addView(icon, ip);
+
+            LinearLayout detailColumn = new LinearLayout(this);
+            detailColumn.setOrientation(LinearLayout.VERTICAL);
+            row.addView(detailColumn, new LinearLayout.LayoutParams(0, -2, 1));
+            TextView heading = text(
+                    entry.title == null ? "Butter Queen" : entry.title, 16, true);
+            detailColumn.addView(heading);
+            TextView detail = text(entry.body == null ? "" : entry.body, 13, false);
             detail.setTextColor(color(R.color.md_theme_onSurfaceVariant));
-            LinearLayout.LayoutParams details = new LinearLayout.LayoutParams(-1, -2);
-            details.topMargin = dp(6);
-            item.addView(detail, details);
-            long stamp = entry.timestamp;
-            TextView date = text(stamp <= 0 ? "" : new SimpleDateFormat(
-                    "dd MMM yyyy · h:mm a", Locale.getDefault()).format(new Date(stamp)), 11, false);
-            date.setTextColor(color(R.color.md_theme_onSurfaceVariant));
-            LinearLayout.LayoutParams dateParams = new LinearLayout.LayoutParams(-1, -2);
-            dateParams.topMargin = dp(8);
-            item.addView(date, dateParams);
+            LinearLayout.LayoutParams dp1 = new LinearLayout.LayoutParams(-1, -2);
+            dp1.topMargin = dp(6);
+            detailColumn.addView(detail, dp1);
+            if (entry.timestamp > 0) {
+                String formatted = new SimpleDateFormat("dd MMM yyyy  ·  h:mm a",
+                        Locale.getDefault()).format(new Date(entry.timestamp));
+                TextView date = text(formatted + "  →", 11, true);
+                date.setTextColor(color(R.color.md_theme_primary));
+                LinearLayout.LayoutParams dateParams = new LinearLayout.LayoutParams(-1, -2);
+                dateParams.topMargin = dp(12);
+                detailColumn.addView(date, dateParams);
+            }
+            card.setClickable(true);
+            card.setFocusable(true);
             card.setOnClickListener(v -> entry.action.run());
+            card.setAlpha(0f);
+            card.setTranslationY(dp(8));
+            card.animate().alpha(1f).translationY(0)
+                    .setDuration(170 + Math.min(index++, 5) * 35L).start();
         }
     }
 

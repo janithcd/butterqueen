@@ -41,6 +41,7 @@ public final class NotificationBellController {
     private List<SparkCakeNotifications.Notice> cakes = new ArrayList<>();
     private Set<String> previousKeys;
     private int cloudUnread;
+    private int previouslyDisplayed;
 
     public NotificationBellController(Activity activity, FrameLayout host) {
         this(activity, host, false);
@@ -53,6 +54,7 @@ public final class NotificationBellController {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         uid = user == null ? null : user.getUid();
         host.removeAllViews();
+        host.setBackgroundResource(R.drawable.bg_bq_bell_surface);
 
         bell = new ImageButton(activity);
         bell.setImageResource(R.drawable.ic_bq_bell);
@@ -145,6 +147,12 @@ public final class NotificationBellController {
         int count = cloudUnread + SparkCakeNotifications.unread(activity, uid, cakes);
         badge.setVisibility(count > 0 ? View.VISIBLE : View.GONE);
         badge.setText(count > 99 ? "99+" : String.valueOf(count));
+        if (count > previouslyDisplayed) {
+            badge.setScaleX(0.7f);
+            badge.setScaleY(0.7f);
+            badge.animate().scaleX(1f).scaleY(1f).setDuration(200).start();
+        }
+        previouslyDisplayed = count;
         bell.setContentDescription(count + " unread notifications");
     }
 

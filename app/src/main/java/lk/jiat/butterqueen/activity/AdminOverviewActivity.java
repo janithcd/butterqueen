@@ -61,8 +61,8 @@ public class AdminOverviewActivity extends AppCompatActivity {
             "Cancelled", "Payment pending", "Other"
     };
     private static final int[] COLORS = {
-            0xFF8B5CF6, 0xFFF59E0B, 0xFF06B6D4, 0xFF10B981,
-            0xFFF43F5E, 0xFF64748B, 0xFFB45309
+            0xFF853651, 0xFFF0B85C, 0xFFE187A9, 0xFF56977B,
+            0xFFC66D71, 0xFF99838F, 0xFFB98B45
     };
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -172,10 +172,15 @@ public class AdminOverviewActivity extends AppCompatActivity {
         adminNav.getMenu().add(0, R.id.bottom_profile, 1, "Profile").setIcon(R.drawable.ic_bq_profile);
         adminNav.setLabelVisibilityMode(
                 com.google.android.material.navigation.NavigationBarView.LABEL_VISIBILITY_LABELED);
-        adminNav.setBackgroundColor(color(R.color.md_theme_surfaceContainerLow));
-        adminNav.setElevation(dp(5));
-        shell.addView(adminNav, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        adminNav.setBackgroundResource(R.drawable.bg_bq_bottom_bar);
+        adminNav.setElevation(dp(12));
+        adminNav.setMinimumHeight(dp(72));
+        LinearLayout.LayoutParams navParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        navParams.leftMargin = dp(16);
+        navParams.rightMargin = dp(16);
+        navParams.bottomMargin = dp(10);
+        shell.addView(adminNav, navParams);
 
         setContentView(shell);
         ViewCompat.setOnApplyWindowInsetsListener(shell, (view, insets) -> {
@@ -200,8 +205,8 @@ public class AdminOverviewActivity extends AppCompatActivity {
         FrameLayout bellSlot = new FrameLayout(this);
         topBar.addView(bellSlot, new LinearLayout.LayoutParams(dp(56), dp(56)));
         notificationBell = new NotificationBellController(this, bellSlot, true);
-        addText(root, "Bakery Studio", 31, R.color.md_theme_onBackground, true, 5);
-        addText(root, "Your bakery, at a glance", 15,
+        addText(root, "Your Bakery Studio", 30, R.color.md_theme_onBackground, true, 5);
+        addText(root, "Everything sweet, all in one place.", 15,
                 R.color.md_theme_onSurfaceVariant, false, 4);
         sync = addText(root, "Loading insights...", 12,
                 R.color.md_theme_onSurfaceVariant, false, 13);
