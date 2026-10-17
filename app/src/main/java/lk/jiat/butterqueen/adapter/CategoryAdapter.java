@@ -15,6 +15,7 @@ import com.bumptech.glide.Glide;
 import java.util.List;
 
 import lk.jiat.butterqueen.R;
+import lk.jiat.butterqueen.data.CategoryImageCatalog;
 import lk.jiat.butterqueen.model.Category;
 
 public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.CategoryViewHolder> {
@@ -58,24 +59,36 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         holder.categoryNameTextView.setText(category.getName());
         holder.itemView.setContentDescription("Browse " + category.getName());
 
-        int fallback = R.drawable.cake_wallpaper;
-        String name = category.getName() == null ? ""
-                : category.getName().toLowerCase(java.util.Locale.ROOT);
-        if (name.contains("cupcake")) fallback = R.drawable.cupcake;
-        else if (name.contains("brownie")) fallback = R.drawable.choc_cake;
-        final int imageFallback = fallback;
+        // Respect administrator-uploaded Firestore images first.
+        // Curated photography fills only otherwise-empty category cards.
+        int fallback = CategoryImageCatalog.fallbackDrawable(category.getName());
+        String imageUrl = category.getImageUrl();
+        boolean hasCustomUrl = imageUrl != null && !imageUrl.trim().isEmpty();
 
-        if (category.getImageUrl() != null && !category.getImageUrl().trim().isEmpty()) {
-            Glide.with(holder.itemView.getContext())
-                    .load(category.getImageUrl())
-                    .placeholder(imageFallback)
-                    .error(imageFallback)
-                    .into(holder.categoryImageView);
-        } else if (category.getImageResId() != 0) {
+        if (!hasCustomUrl && category.getImageResId() != 0) {
+            // Cancel a prior Glide request when a recycled view displays a
+            // legacy local drawable instead of a network image.
+            Glide.with(holder.categoryImageView).clear(holder.categoryImageView);
             holder.categoryImageView.setImageResource(category.getImageResId());
         } else {
-            holder.categoryImageView.setImageResource(imageFallback);
+            if (!hasCustomUrl) {
+                imageUrl = CategoryImageCatalog.recommendedUrl(category.getName());
+            }
+
+            if (imageUrl == null || imageUrl.trim().isEmpty()) {
+                Glide.with(holder.categoryImageView).clear(holder.categoryImageView);
+                holder.categoryImageView.setImageResource(fallback);
+            } else {
+                Glide.with(holder.categoryImageView)
+                        .load(imageUrl)
+                        .centerCrop()
+                        .placeholder(fallback)
+                        .error(fallback)
+                        .into(holder.categoryImageView);
+            }
         }
+        holder.categoryImageView.setContentDescription(
+                "Photo for " + (category.getName() == null ? "bakery" : category.getName()));
 
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
