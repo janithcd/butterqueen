@@ -58,5 +58,5 @@ match /reviews/{reviewUid} {
     && validContent()
     && request.resource.data.updatedAt == request.time;
 
-  allow delete: if false;
+  // Review content is customer-owned. Admin may remove abusive reviews.\n  allow delete: if isAdmin();
 }
