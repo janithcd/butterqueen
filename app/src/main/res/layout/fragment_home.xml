@@ -21,7 +21,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Hello, Queen 👑"
+                android:text="Good things are baking"
                 android:textColor="@color/md_theme_onSurface"
                 android:textSize="24sp"
                 android:textStyle="bold" />
@@ -36,7 +36,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:layout_marginBottom="16dp"
-            android:text="Cakes by the kg • cupcakes and brownies by the piece"
+            android:text="Made with love, enjoyed in every bite"
             android:textColor="@color/md_theme_onSurfaceVariant"
             android:textSize="14sp" />
 
@@ -45,7 +45,7 @@
             android:singleLine="true"
             android:imeOptions="actionSearch"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
+            android:layout_height="56dp"
             android:layout_marginBottom="16dp"
             android:background="@drawable/custom_input_search"
             android:drawableStart="@drawable/ic_bq_search"
@@ -60,10 +60,11 @@
             android:textSize="14sp" />
 
         <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.ButterQueen.Card"
             android:layout_width="match_parent"
             android:layout_height="220dp"
             android:layout_marginBottom="20dp"
-            app:cardCornerRadius="24dp"
+            app:cardCornerRadius="20dp"
             app:cardElevation="0dp">
 
             <FrameLayout
@@ -80,7 +81,7 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:background="#66000000" />
+                    android:background="@drawable/bg_bq_hero_scrim" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -106,13 +107,14 @@
                         android:textSize="13sp" />
 
                     <com.google.android.material.button.MaterialButton
+            style="@style/Widget.ButterQueen.Button.Primary"
                         android:id="@+id/orderNowButton"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
                         android:text="Order Now"
                         android:textAllCaps="false"
-                        app:cornerRadius="18dp" />
+                        app:cornerRadius="16dp" />
                 </LinearLayout>
 
             </FrameLayout>
@@ -120,6 +122,7 @@
         </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.button.MaterialButton
+            style="@style/Widget.ButterQueen.Button.Primary"
             android:id="@+id/customCakeButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -129,7 +132,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/myCustomCakeRequestsButton"
-            style="@style/Widget.Material3.Button.OutlinedButton"
+            style="@style/Widget.ButterQueen.Button.Outlined"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="18dp"

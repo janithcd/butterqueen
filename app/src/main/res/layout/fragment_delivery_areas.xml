@@ -11,6 +11,7 @@
         android:layout_height="match_parent" />
 
     <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.ButterQueen.Card"
         android:id="@+id/legendCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -116,6 +117,7 @@
     </com.google.android.material.card.MaterialCardView>
 
     <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.ButterQueen.Card"
         android:id="@+id/infoCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -174,6 +176,7 @@
                 android:orientation="horizontal">
 
                 <com.google.android.material.button.MaterialButton
+            style="@style/Widget.ButterQueen.Button.Primary"
                     android:id="@+id/centerMapButton"
                     android:layout_width="0dp"
                     android:layout_height="48dp"
@@ -186,7 +189,7 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/clearSelectionButton"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    style="@style/Widget.ButterQueen.Button.Outlined"
                     android:layout_width="0dp"
                     android:layout_height="48dp"
                     android:layout_marginStart="10dp"

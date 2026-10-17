@@ -27,11 +27,12 @@
             android:textSize="14sp" />
 
         <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.ButterQueen.Card"
             android:id="@+id/settingsThemeRow"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="22dp"
-            app:cardCornerRadius="18dp"
+            app:cardCornerRadius="20dp"
             app:cardElevation="0dp" app:cardBackgroundColor="@color/md_theme_surfaceContainerLow" app:strokeColor="@color/md_theme_outlineVariant" app:strokeWidth="1dp">
             <LinearLayout
                 android:layout_width="match_parent"
@@ -62,7 +63,7 @@
                     app:selectionRequired="true">
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/settingsThemeSystem"
-                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        style="@style/Widget.ButterQueen.Button.Outlined"
                         android:layout_width="0dp"
                         android:layout_height="48dp"
                         android:layout_weight="1"
@@ -70,7 +71,7 @@
                         android:textAllCaps="false" />
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/settingsThemeLight"
-                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        style="@style/Widget.ButterQueen.Button.Outlined"
                         android:layout_width="0dp"
                         android:layout_height="48dp"
                         android:layout_weight="1"
@@ -78,7 +79,7 @@
                         android:textAllCaps="false" />
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/settingsThemeDark"
-                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        style="@style/Widget.ButterQueen.Button.Outlined"
                         android:layout_width="0dp"
                         android:layout_height="48dp"
                         android:layout_weight="1"
@@ -89,10 +90,11 @@
         </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.ButterQueen.Card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            app:cardCornerRadius="18dp"
+            app:cardCornerRadius="20dp"
             app:cardElevation="0dp" app:cardBackgroundColor="@color/md_theme_surfaceContainerLow" app:strokeColor="@color/md_theme_outlineVariant" app:strokeWidth="1dp">
             <LinearLayout
                 android:layout_width="match_parent"
@@ -122,14 +124,14 @@
                     android:textSize="13sp" />
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/settingsVerifyBiometric"
-                    style="@style/Widget.Material3.Button.TextButton"
+                    style="@style/Widget.ButterQueen.Button.Text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:text="Verify biometrics" />
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/settingsChangeCode"
-                    style="@style/Widget.Material3.Button.TextButton"
+                    style="@style/Widget.ButterQueen.Button.Text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Change backup code"
@@ -138,10 +140,11 @@
         </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.ButterQueen.Card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            app:cardCornerRadius="18dp"
+            app:cardCornerRadius="20dp"
             app:cardElevation="0dp" app:cardBackgroundColor="@color/md_theme_surfaceContainerLow" app:strokeColor="@color/md_theme_outlineVariant" app:strokeWidth="1dp">
             <LinearLayout
                 android:layout_width="match_parent"
@@ -173,11 +176,12 @@
         </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.ButterQueen.Card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:layout_marginBottom="18dp"
-            app:cardCornerRadius="18dp"
+            app:cardCornerRadius="20dp"
             app:cardElevation="0dp" app:cardBackgroundColor="@color/md_theme_surfaceContainerLow" app:strokeColor="@color/md_theme_outlineVariant" app:strokeWidth="1dp">
             <LinearLayout
                 android:layout_width="match_parent"
@@ -193,25 +197,25 @@
                     android:textStyle="bold" />
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/settingsHelp"
-                    style="@style/Widget.Material3.Button.TextButton"
+                    style="@style/Widget.ButterQueen.Button.Text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Help &amp; FAQs" />
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/settingsAbout"
-                    style="@style/Widget.Material3.Button.TextButton"
+                    style="@style/Widget.ButterQueen.Button.Text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="About ButterQueen" />
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/settingsCall"
-                    style="@style/Widget.Material3.Button.TextButton"
+                    style="@style/Widget.ButterQueen.Button.Text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Call 0763227525" />
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/settingsEmail"
-                    style="@style/Widget.Material3.Button.TextButton"
+                    style="@style/Widget.ButterQueen.Button.Text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Email info@butterqueen.com" />

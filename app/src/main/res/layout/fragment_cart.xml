@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:background="@color/md_theme_background"
     android:orientation="vertical"
-    android:padding="18dp">
+    android:padding="20dp">
 
     <TextView
         android:id="@+id/cartTitleTextView"
@@ -48,6 +48,7 @@
         android:paddingBottom="12dp" />
 
     <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.ButterQueen.Card"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:cardCornerRadius="20dp"
@@ -78,13 +79,14 @@
                 android:textStyle="bold" />
 
             <com.google.android.material.button.MaterialButton
+            style="@style/Widget.ButterQueen.Button.Primary"
                 android:id="@+id/checkoutButton"
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
                 android:layout_marginTop="14dp"
                 android:text="Proceed to Checkout"
                 android:textAllCaps="false"
-                app:cornerRadius="18dp" />
+                app:cornerRadius="16dp" />
         </LinearLayout>
 
     </com.google.android.material.card.MaterialCardView>

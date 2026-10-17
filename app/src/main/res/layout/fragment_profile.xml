@@ -13,6 +13,7 @@
         android:padding="16dp">
 
         <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.ButterQueen.Card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:cardCornerRadius="28dp"
@@ -27,6 +28,7 @@
                 android:padding="24dp">
 
                 <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.ButterQueen.Card"
         android:layout_width="140dp"
         android:layout_height="140dp"
         app:cardCornerRadius="70dp"
@@ -69,13 +71,14 @@
                     android:alpha="0.85" />
 
                 <com.google.android.material.button.MaterialButton
+            style="@style/Widget.ButterQueen.Button.Primary"
                     android:id="@+id/changePhotoButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="18dp"
                     android:text="Change Photo"
                     android:textAllCaps="false"
-                    app:cornerRadius="18dp" />
+                    app:cornerRadius="16dp" />
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -92,10 +95,11 @@
         </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.ButterQueen.Card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            app:cardCornerRadius="24dp"
+            app:cardCornerRadius="20dp"
             app:cardElevation="0dp" app:cardBackgroundColor="@color/md_theme_surfaceContainerLow" app:strokeColor="@color/md_theme_outlineVariant" app:strokeWidth="1dp">
 
             <LinearLayout
@@ -117,7 +121,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:hint="First Name"
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    style="@style/Widget.ButterQueen.TextField"
                     app:boxCornerRadiusTopStart="16dp"
                     app:boxCornerRadiusTopEnd="16dp"
                     app:boxCornerRadiusBottomStart="16dp"
@@ -136,7 +140,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="14dp"
                     android:hint="Last Name"
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    style="@style/Widget.ButterQueen.TextField"
                     app:boxCornerRadiusTopStart="16dp"
                     app:boxCornerRadiusTopEnd="16dp"
                     app:boxCornerRadiusBottomStart="16dp"
@@ -155,7 +159,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="14dp"
                     android:hint="Email"
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    style="@style/Widget.ButterQueen.TextField"
                     app:boxCornerRadiusTopStart="16dp"
                     app:boxCornerRadiusTopEnd="16dp"
                     app:boxCornerRadiusBottomStart="16dp"
@@ -176,7 +180,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="14dp"
                     android:hint="Birthday"
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    style="@style/Widget.ButterQueen.TextField"
                     app:boxCornerRadiusTopStart="16dp"
                     app:boxCornerRadiusTopEnd="16dp"
                     app:boxCornerRadiusBottomStart="16dp"
@@ -195,15 +199,17 @@
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.button.MaterialButton
+            style="@style/Widget.ButterQueen.Button.Primary"
                     android:id="@+id/updateProfileButton"
                     android:layout_width="match_parent"
                     android:layout_height="56dp"
                     android:layout_marginTop="22dp"
                     android:text="Update Profile"
                     android:textAllCaps="false"
-                    app:cornerRadius="18dp" />
+                    app:cornerRadius="16dp" />
 
                 <com.google.android.material.button.MaterialButton
+            style="@style/Widget.ButterQueen.Button.Primary"
                     android:id="@+id/deleteAccountButton"
                     android:layout_width="match_parent"
                     android:layout_height="56dp"
@@ -212,7 +218,7 @@
                     android:textAllCaps="false"
                     android:textColor="@color/md_theme_onErrorContainer"
                     app:backgroundTint="@color/md_theme_errorContainer"
-                    app:cornerRadius="18dp" />
+                    app:cornerRadius="16dp" />
 
             </LinearLayout>
 

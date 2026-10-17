@@ -25,11 +25,12 @@
             android:textColor="@color/md_theme_onSurfaceVariant"
             android:textSize="14sp" />
         <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.ButterQueen.Card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             app:cardBackgroundColor="@color/md_theme_surfaceContainerLow"
-            app:cardCornerRadius="18dp"
+            app:cardCornerRadius="20dp"
             app:strokeColor="@color/md_theme_outlineVariant"
             app:strokeWidth="1dp">
             <LinearLayout
@@ -52,6 +53,7 @@
                     android:textColor="@color/md_theme_onSurfaceVariant"
                     android:textSize="14sp" />
                 <com.google.android.material.button.MaterialButton
+            style="@style/Widget.ButterQueen.Button.Primary"
                     android:id="@+id/contactCall"
                     android:layout_width="match_parent"
                     android:layout_height="52dp"
@@ -61,7 +63,7 @@
                     app:iconTint="@color/md_theme_onPrimary" />
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/contactEmail"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    style="@style/Widget.ButterQueen.Button.Outlined"
                     android:layout_width="match_parent"
                     android:layout_height="52dp"
                     android:layout_marginTop="8dp"
