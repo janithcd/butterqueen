@@ -100,6 +100,7 @@ public final class ProductReviewActivity extends AppCompatActivity {
         stars = findViewById(R.id.reviewStars);
         comment = findViewById(R.id.reviewComment);
         submit = findViewById(R.id.reviewSubmit);
+        showReviewFields(false);
         submit.setEnabled(false);
         submit.setOnClickListener(v -> saveReview());
 
@@ -116,10 +117,10 @@ public final class ProductReviewActivity extends AppCompatActivity {
         if (uid == null) {
             eligibilityMessage.setText("Sign in to write a verified-purchase review.");
         } else {
-            // An existing review can be edited from another delivered order receipt.
+            // From product details, automatically discover a delivered order
+            // containing this exact product. Never unlock from just a product view.
             if (proofOrderId != null && proofItemId != null) verifyPurchasedItem();
-            else eligibilityMessage.setText(
-                    "To write a review, open Orders → a delivered order receipt → Rate product.");
+            else discoverDeliveredPurchase();
         }
     }
 
@@ -130,7 +131,8 @@ public final class ProductReviewActivity extends AppCompatActivity {
                 .addSnapshotListener((snapshot, error) -> {
                     if (isFinishing() || isDestroyed()) return;
                     if (error != null) {
-                        ratingSummary.setText("Reviews unavailable. Check your connection.");
+                        ratingSummary.setText("Reviews unavailable. Check network or review permissions.");
+                        reviewRows.removeAllViews();
                         return;
                     }
                     if (snapshot == null) return;
@@ -149,6 +151,60 @@ public final class ProductReviewActivity extends AppCompatActivity {
     private boolean sameAccount() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         return uid != null && user != null && uid.equals(user.getUid());
+    }
+
+    private void showReviewFields(boolean visible) {
+        int state = visible ? View.VISIBLE : View.GONE;
+        stars.setVisibility(state);
+        ((View) comment.getParent()).setVisibility(state);
+        submit.setVisibility(state);
+    }
+
+    private void discoverDeliveredPurchase() {
+        if (!sameAccount()) return;
+        eligibilityMessage.setText("Checking your delivered orders for this product...");
+        db.collection("orders").whereEqualTo("userId", uid).limit(100)
+                .get(Source.SERVER)
+                .addOnSuccessListener(result -> {
+                    if (!sameAccount() || isFinishing() || isDestroyed()) return;
+                    List<DocumentSnapshot> delivered = new ArrayList<>();
+                    for (DocumentSnapshot order : result) {
+                        if (uid.equals(order.getString("userId"))
+                                && "delivered".equals(order.getString("orderStatus"))) {
+                            delivered.add(order);
+                        }
+                    }
+                    findItemInOrder(delivered, 0);
+                })
+                .addOnFailureListener(error -> eligibilityMessage.setText(
+                        "Cannot check purchases right now. Please reconnect and try again."));
+    }
+
+    private void findItemInOrder(List<DocumentSnapshot> delivered, int index) {
+        if (!sameAccount() || isFinishing() || isDestroyed()) return;
+        if (index >= delivered.size()) {
+            eligibilityMessage.setText(
+                    "Reviews unlock only after delivery of this exact product.");
+            showReviewFields(false);
+            return;
+        }
+        DocumentSnapshot order = delivered.get(index);
+        db.collection("orders").document(order.getId()).collection("items")
+                .get(Source.SERVER)
+                .addOnSuccessListener(items -> {
+                    if (!sameAccount() || isFinishing() || isDestroyed()) return;
+                    for (DocumentSnapshot item : items) {
+                        if (productId.equals(item.getString("productId"))) {
+                            proofOrderId = order.getId();
+                            proofItemId = item.getId();
+                            verifyPurchasedItem();
+                            return;
+                        }
+                    }
+                    findItemInOrder(delivered, index + 1);
+                })
+                .addOnFailureListener(error -> eligibilityMessage.setText(
+                        "Cannot check delivered order items. Check your connection."));
     }
 
     private void verifyPurchasedItem() {
@@ -171,7 +227,8 @@ public final class ProductReviewActivity extends AppCompatActivity {
                                     return;
                                 }
                                 eligible = true;
-                                eligibilityMessage.setText("Verified purchase ✓  Rate your experience.");
+                                eligibilityMessage.setText("Verified delivered purchase ✓");
+                                showReviewFields(true);
                                 loadOwnReview();
                             })
                             .addOnFailureListener(e ->
@@ -198,8 +255,10 @@ public final class ProductReviewActivity extends AppCompatActivity {
                     }
                     submit.setEnabled(eligible);
                 })
-                .addOnFailureListener(e ->
-                        eligibilityMessage.setText("Cannot load your review. Check connection."));
+                .addOnFailureListener(e -> {
+                    eligibilityMessage.setText("Cannot load your review. Check connection or Firestore rules.");
+                    submit.setEnabled(false);
+                });
     }
 
     private void saveReview() {
