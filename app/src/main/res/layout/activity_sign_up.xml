@@ -48,7 +48,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
                 android:layout_marginBottom="28dp"
-                android:text="Join ButterQueen today"
+                android:text="Your sweetest celebrations begin here."
                 android:textColor="@color/md_theme_onSurfaceVariant"
                 android:textSize="14sp" />
 

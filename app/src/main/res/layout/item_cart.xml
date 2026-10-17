@@ -5,8 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="12dp"
-    app:cardBackgroundColor="@color/md_theme_surfaceContainerLow"
-    app:cardCornerRadius="20dp"
+    app:cardBackgroundColor="@color/md_theme_surfaceContainerLowest"
+    app:cardCornerRadius="24dp"
     app:cardElevation="0dp"
     app:strokeColor="@color/md_theme_outlineVariant"
     app:strokeWidth="1dp">

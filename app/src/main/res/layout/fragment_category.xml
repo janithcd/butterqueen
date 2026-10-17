@@ -9,12 +9,23 @@
     android:padding="20dp">
 
     <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="7dp"
+        android:text="THE BUTTER QUEEN COLLECTION"
+        android:letterSpacing="0.12"
+        android:textSize="10sp"
+        android:textStyle="bold"
+        android:textColor="@color/md_theme_primary" />
+
+    <TextView
         android:id="@+id/categoryTitleTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Categories"
+        android:text="Find your favorite"
         android:textColor="@color/md_theme_onBackground"
-        android:textSize="24sp"
+        android:textSize="27sp"
         android:textStyle="bold" />
 
     <TextView
@@ -22,7 +33,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:layout_marginBottom="16dp"
-        android:text="Find cakes, cupcakes, and brownies"
+        android:text="Cakes, cupcakes, brownies &amp; more."
         android:textColor="@color/md_theme_onSurfaceVariant"
         android:textSize="14sp" />
 
