@@ -36,6 +36,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import lk.jiat.butterqueen.R;
+import lk.jiat.butterqueen.data.ReviewPurchasePolicy;
 
 /**
  * Product reviews are public to read but require a real delivered order to create.
@@ -169,8 +170,9 @@ public final class ProductReviewActivity extends AppCompatActivity {
                     if (!sameAccount() || isFinishing() || isDestroyed()) return;
                     List<DocumentSnapshot> delivered = new ArrayList<>();
                     for (DocumentSnapshot order : result) {
-                        if (uid.equals(order.getString("userId"))
-                                && "delivered".equals(order.getString("orderStatus"))) {
+                        if (ReviewPurchasePolicy.isDeliveredForUser(uid,
+                                order.getString("userId"),
+                                order.getString("orderStatus"))) {
                             delivered.add(order);
                         }
                     }
@@ -194,7 +196,8 @@ public final class ProductReviewActivity extends AppCompatActivity {
                 .addOnSuccessListener(items -> {
                     if (!sameAccount() || isFinishing() || isDestroyed()) return;
                     for (DocumentSnapshot item : items) {
-                        if (productId.equals(item.getString("productId"))) {
+                        if (ReviewPurchasePolicy.matchesProduct(productId,
+                                item.getString("productId"))) {
                             proofOrderId = order.getId();
                             proofItemId = item.getId();
                             verifyPurchasedItem();
@@ -213,8 +216,9 @@ public final class ProductReviewActivity extends AppCompatActivity {
         db.collection("orders").document(proofOrderId).get(Source.SERVER)
                 .addOnSuccessListener(order -> {
                     if (!sameAccount() || isFinishing() || isDestroyed()) return;
-                    if (!order.exists() || !uid.equals(order.getString("userId"))
-                            || !"delivered".equals(order.getString("orderStatus"))) {
+                    if (!order.exists() || !ReviewPurchasePolicy.isDeliveredForUser(
+                            uid, order.getString("userId"),
+                            order.getString("orderStatus"))) {
                         eligibilityMessage.setText("Only products from delivered orders can be reviewed.");
                         return;
                     }
@@ -222,7 +226,8 @@ public final class ProductReviewActivity extends AppCompatActivity {
                             .collection("items").document(proofItemId).get(Source.SERVER)
                             .addOnSuccessListener(item -> {
                                 if (!sameAccount() || isFinishing() || isDestroyed()) return;
-                                if (!item.exists() || !productId.equals(item.getString("productId"))) {
+                                if (!item.exists() || !ReviewPurchasePolicy.matchesProduct(
+                                        productId, item.getString("productId"))) {
                                     eligibilityMessage.setText("This product was not in that order.");
                                     return;
                                 }
