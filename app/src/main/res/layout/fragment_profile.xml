@@ -209,16 +209,38 @@
                     app:cornerRadius="16dp" />
 
                 <com.google.android.material.button.MaterialButton
-            style="@style/Widget.ButterQueen.Button.Primary"
+                    style="@style/Widget.ButterQueen.Button.Primary"
                     android:id="@+id/deleteAccountButton"
                     android:layout_width="match_parent"
                     android:layout_height="56dp"
-                    android:layout_marginTop="12dp"
-                    android:text="Delete Account"
+                    android:layout_marginTop="16dp"
+                    android:text="Hold 5 seconds to delete account"
                     android:textAllCaps="false"
                     android:textColor="@color/md_theme_onErrorContainer"
+                    android:contentDescription="Press and hold for five continuous seconds to begin account deletion"
                     app:backgroundTint="@color/md_theme_errorContainer"
                     app:cornerRadius="16dp" />
+
+                <ProgressBar
+                    android:id="@+id/deleteHoldProgress"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="6dp"
+                    android:layout_marginTop="8dp"
+                    android:max="100"
+                    android:progress="0"
+                    android:progressTint="@color/md_theme_error"
+                    android:progressBackgroundTint="@color/md_theme_outlineVariant" />
+
+                <TextView
+                    android:id="@+id/deleteHoldHint"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center"
+                    android:text="Press and keep holding for 5 seconds. Release to cancel."
+                    android:textSize="12sp"
+                    android:textColor="@color/md_theme_onSurfaceVariant" />
 
             </LinearLayout>
 
