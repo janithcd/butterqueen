@@ -3,3 +3,5 @@
 MAPS_API_KEY=
 # Sandbox Merchant ID only. A PayHere Merchant Secret must stay on a trusted server.
 PAYHERE_MERCHANT_ID=
+# Firebase HTTPS Function URL (public endpoint, not a secret). Must start with https://.
+PAYHERE_NOTIFY_URL=

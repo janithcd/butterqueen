@@ -22,6 +22,7 @@ import com.google.android.material.card.MaterialCardView;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Source;
 import com.google.firebase.firestore.WriteBatch;
 
 import java.text.SimpleDateFormat;
@@ -169,7 +170,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
     }
 
     private void loadOrders() {
-        firestore.collection("orders").get()
+        firestore.collection("orders").get(Source.SERVER)
                 .addOnSuccessListener(snapshot -> {
                     if (!showingOrders || isFinishing()) return;
                     List<DocumentSnapshot> documents = new ArrayList<>(snapshot.getDocuments());
@@ -238,54 +239,81 @@ public class AdminDashboardActivity extends AppCompatActivity {
                         Toast.makeText(this, "Could not load order items", Toast.LENGTH_LONG).show());
     }
 
-    private void chooseStatus(DocumentSnapshot order) {
+    private void chooseStatus(DocumentSnapshot cachedOrder) {
+        // PayHere can verify a card payment while the order dialog is open.
+        firestore.collection("orders").document(cachedOrder.getId()).get(Source.SERVER)
+                .addOnSuccessListener(order -> {
+                    if (isFinishing() || isDestroyed()) return;
+                    if (!order.exists()) {
+                        Toast.makeText(this, "Order no longer exists", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                    showStatusChoices(order);
+                })
+                .addOnFailureListener(error -> Toast.makeText(this,
+                        "Could not refresh order payment status", Toast.LENGTH_LONG).show());
+    }
+
+    private void showStatusChoices(DocumentSnapshot order) {
         String paymentMethod = order.getString("paymentMethod");
         String paymentStatus = order.getString("paymentStatus");
         boolean awaitingPayment = "payhere".equals(paymentMethod)
                 && !"paid".equals(paymentStatus);
-        // Never mark an unverified PayHere payment as delivered.
-        String[] statuses = awaitingPayment
-                ? new String[]{"payment_pending", "cancelled"}
-                : new String[]{"placed", "preparing", "out_for_delivery",
-                        "delivered", "cancelled"};
-        String[] labels = awaitingPayment
-                ? new String[]{"Payment verification pending", "Cancelled"}
-                : new String[]{"Placed", "Preparing", "Out for delivery",
-                        "Delivered", "Cancelled"};
+        if (awaitingPayment) {
+            new AlertDialog.Builder(this)
+                    .setTitle("Card payment not verified")
+                    .setMessage("PayHere hasn't verified this order yet. Only verified " +
+                            "card orders can be prepared or delivered.\n\n" +
+                            "Payment status: " + value(paymentStatus) +
+                            "\nPayHere reference: " + value(order.getString("paymentReference")) +
+                            "\n\nCheck PayHere for this reference, then Refresh.")
+                    .setNegativeButton("Close", null)
+                    .setNeutralButton("Cancel order", (d, w) ->
+                            confirmOrderStatus(order, "cancelled", "Cancelled"))
+                    .setPositiveButton("Refresh", (d, w) -> chooseStatus(order))
+                    .show();
+            return;
+        }
 
+        String[] statuses = {"placed", "preparing", "out_for_delivery",
+                "delivered", "cancelled"};
+        String[] labels = {"Placed", "Preparing", "Out for delivery",
+                "Delivered", "Cancelled"};
         new AlertDialog.Builder(this)
                 .setTitle("Update order status")
-                .setItems(labels, (dialog, which) -> {
-                    String chosen = statuses[which];
-                    if (chosen.equals(order.getString("orderStatus"))) return;
-                    new AlertDialog.Builder(this)
-                            .setTitle("Confirm status update")
-                            .setMessage("Change order #" + order.getId().substring(
-                                    0, Math.min(8, order.getId().length()))
-                                    + " to " + labels[which] + "?")
-                            .setNegativeButton("Cancel", null)
-                            .setPositiveButton("Update", (confirm, button) -> {
-                                AdminAccess.verify(allowed -> {
+                .setItems(labels, (dialog, which) ->
+                        confirmOrderStatus(order, statuses[which], labels[which]))
+                .show();
+    }
+
+    private void confirmOrderStatus(DocumentSnapshot order, String chosen, String label) {
+        if (chosen.equals(order.getString("orderStatus"))) return;
+        new AlertDialog.Builder(this)
+                .setTitle("Confirm status update")
+                .setMessage("Change order #" + order.getId().substring(
+                        0, Math.min(8, order.getId().length())) + " to " + label + "?")
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton("Update", (confirm, button) -> {
+                    AdminAccess.verify(allowed -> {
+                        if (isFinishing() || isDestroyed()) return;
+                        if (!allowed) {
+                            Toast.makeText(this, "Admin access required",
+                                    Toast.LENGTH_LONG).show();
+                            finish();
+                            return;
+                        }
+                        firestore.collection("orders").document(order.getId())
+                                .update("orderStatus", chosen)
+                                .addOnSuccessListener(unused -> {
                                     if (isFinishing() || isDestroyed()) return;
-                                    if (!allowed) {
-                                        Toast.makeText(this, "Admin access required",
-                                                Toast.LENGTH_LONG).show();
-                                        finish();
-                                        return;
-                                    }
-                                    firestore.collection("orders").document(order.getId())
-                                            .update("orderStatus", chosen)
-                                            .addOnSuccessListener(unused -> {
-                                                if (isFinishing() || isDestroyed()) return;
-                                                Toast.makeText(this, "Order status updated",
-                                                        Toast.LENGTH_SHORT).show();
-                                                if (showingOrders) loadContent();
-                                            })
-                                            .addOnFailureListener(error -> Toast.makeText(this,
-                                                    "Update failed: " + error.getMessage(),
-                                                    Toast.LENGTH_LONG).show());
-                                });
-                            }).show();
+                                    Toast.makeText(this, "Order status updated",
+                                            Toast.LENGTH_SHORT).show();
+                                    if (showingOrders) loadContent();
+                                })
+                                .addOnFailureListener(error -> Toast.makeText(this,
+                                        "Update failed: " + error.getMessage(),
+                                        Toast.LENGTH_LONG).show());
+                    });
                 }).show();
     }
 

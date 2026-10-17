@@ -22,6 +22,11 @@ def payHereMerchantId = localConfig.getProperty(
         'PAYHERE_MERCHANT_ID', ''
 ).trim()
 
+// Public HTTPS callback URL; the matching merchant secret stays in Firebase.
+def payHereNotifyUrl = localConfig.getProperty(
+        'PAYHERE_NOTIFY_URL', ''
+).trim()
+
 if (payHereMerchantId &&
         !(payHereMerchantId ==~ /[0-9]+/)) {
     throw new GradleException(
@@ -49,6 +54,10 @@ android {
         buildConfigField "String",
                 "PAYHERE_MERCHANT_ID",
                 '"' + payHereMerchantId + '"'
+
+        buildConfigField "String",
+                "PAYHERE_NOTIFY_URL",
+                '"' + payHereNotifyUrl + '"'
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
