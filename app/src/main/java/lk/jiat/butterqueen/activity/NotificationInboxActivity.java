@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import lk.jiat.butterqueen.notification.SparkCakeNotifications;
+import lk.jiat.butterqueen.notification.SparkOrderNotifications;
 import java.util.List;
 import java.util.Locale;
 
@@ -48,8 +49,10 @@ public final class NotificationInboxActivity extends AppCompatActivity {
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private ListenerRegistration listener;
     private ListenerRegistration cakeListener;
+    private ListenerRegistration orderListener;
     private List<DocumentSnapshot> cloudDocs = new ArrayList<>();
     private List<SparkCakeNotifications.Notice> cakeDocs = new ArrayList<>();
+    private List<SparkOrderNotifications.Notice> orderDocs = new ArrayList<>();
     private LinearLayout content;
     private String uid;
     private boolean marking;
@@ -136,6 +139,24 @@ public final class NotificationInboxActivity extends AppCompatActivity {
         db.collection("users").document(uid).get().addOnSuccessListener(profile -> {
             if (!sameUser() || isFinishing() || isDestroyed()) return;
             boolean admin = "admin".equals(profile.getString("role"));
+            orderListener = SparkOrderNotifications.watch(uid, admin,
+                    new SparkOrderNotifications.Listener() {
+                        @Override
+                        public void onNotices(List<SparkOrderNotifications.Notice> notices) {
+                            if (!sameUser() || isFinishing() || isDestroyed()) return;
+                            orderDocs = notices;
+                            SparkOrderNotifications.markRead(NotificationInboxActivity.this,
+                                    uid, notices);
+                            renderAll();
+                        }
+                        @Override
+                        public void onError(Exception error) {
+                            if (!isFinishing() && !isDestroyed())
+                                Toast.makeText(NotificationInboxActivity.this,
+                                        "Order updates unavailable. Check connection.",
+                                        Toast.LENGTH_SHORT).show();
+                        }
+                    });
             cakeListener = SparkCakeNotifications.watch(uid, admin,
                     new SparkCakeNotifications.Listener() {
                         @Override
@@ -162,8 +183,10 @@ public final class NotificationInboxActivity extends AppCompatActivity {
     protected void onStop() {
         if (listener != null) listener.remove();
         if (cakeListener != null) cakeListener.remove();
+        if (orderListener != null) orderListener.remove();
         listener = null;
         cakeListener = null;
+        orderListener = null;
         super.onStop();
     }
 
@@ -197,7 +220,7 @@ public final class NotificationInboxActivity extends AppCompatActivity {
 
     private void renderAll() {
         content.removeAllViews();
-        if (cloudDocs.isEmpty() && cakeDocs.isEmpty()) {
+        if (cloudDocs.isEmpty() && cakeDocs.isEmpty() && orderDocs.isEmpty()) {
             MaterialCardView empty = new MaterialCardView(this);
             empty.setRadius(dp(26));
             empty.setCardElevation(0);
@@ -245,6 +268,10 @@ public final class NotificationInboxActivity extends AppCompatActivity {
         for (SparkCakeNotifications.Notice notice : cakeDocs) {
             entries.add(new Entry(notice.title, notice.body, notice.type, notice.atMillis,
                     () -> openCake(notice)));
+        }
+        for (SparkOrderNotifications.Notice notice : orderDocs) {
+            entries.add(new Entry(notice.title, notice.body, notice.type, notice.atMillis,
+                    () -> openOrder(notice)));
         }
         Collections.sort(entries, (left, right) -> Long.compare(right.timestamp, left.timestamp));
         int index = 0;
@@ -309,6 +336,16 @@ public final class NotificationInboxActivity extends AppCompatActivity {
             card.setTranslationY(dp(8));
             card.animate().alpha(1f).translationY(0)
                     .setDuration(170 + Math.min(index++, 5) * 35L).start();
+        }
+    }
+
+    private void openOrder(SparkOrderNotifications.Notice notice) {
+        if (!sameUser()) { finish(); return; }
+        if ("new_order".equals(notice.type)) {
+            startActivity(new Intent(this, AdminDashboardActivity.class)
+                    .putExtra("open_orders", true));
+        } else {
+            startActivity(OrderReceiptActivity.intentFor(this, notice.orderId));
         }
     }
 
