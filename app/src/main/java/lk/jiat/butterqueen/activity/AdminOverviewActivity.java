@@ -45,6 +45,8 @@ import java.util.Locale;
 import java.util.Map;
 
 import lk.jiat.butterqueen.R;
+import lk.jiat.butterqueen.BuildConfig;
+import lk.jiat.butterqueen.payment.SandboxOrderPolicy;
 import lk.jiat.butterqueen.data.AdminAccess;
 
 /**
@@ -574,23 +576,43 @@ public class AdminOverviewActivity extends AppCompatActivity {
     private void showStatusChoices(DocumentSnapshot order) {
         String method = order.getString("paymentMethod");
         String payment = order.getString("paymentStatus");
-        boolean awaitingPayment = "payhere".equals(method) && !"paid".equals(payment);
+        boolean awaitingPayment = !SandboxOrderPolicy.canManageOrder(
+                method, payment, BuildConfig.DEBUG);
         if (awaitingPayment) {
             String reference = order.getString("paymentReference");
             String shortId = order.getId().substring(0, Math.min(8, order.getId().length()));
-            new AlertDialog.Builder(this)
-                    .setTitle("Card payment not verified")
-                    .setMessage("Order #" + shortId + " cannot be prepared or delivered " +
-                            "until PayHere confirms its payment.\n\n" +
-                            "Payment status: " + (payment == null ? "Unknown" : payment) +
-                            "\nPayHere reference: " + (reference == null ? "Unavailable" : reference) +
-                            "\n\nCheck the transaction in PayHere, then tap Refresh. " +
-                            "This screen cannot confirm a payment.")
-                    .setNegativeButton("Close", null)
-                    .setNeutralButton("Cancel order", (d, w) ->
-                            confirmStatusChange(order, "cancelled", "Cancelled"))
-                    .setPositiveButton("Refresh", (d, w) -> chooseStatus(order))
-                    .show();
+            boolean canDemo = SandboxOrderPolicy.canConvertOlderPendingOrder(
+                    method, payment, order.getString("orderStatus"), BuildConfig.DEBUG);
+            String description = "Order #" + shortId +
+                    " has not been verified by the PayHere payment server.\n\n" +
+                    "Payment status: " + (payment == null ? "Unknown" : payment) +
+                    "\nPayHere reference: " + (reference == null ? "Unavailable" : reference);
+            if (canDemo) {
+                new AlertDialog.Builder(this)
+                        .setTitle("Sandbox payment — viva demo")
+                        .setMessage(description + "\n\nFor this university demo only, " +
+                                "you can mark the sandbox attempt as a DEMO (not a paid transaction) " +
+                                "and continue managing the order.")
+                        .setItems(new String[]{"Continue as sandbox demo",
+                                        "Cancel order", "Refresh payment status"},
+                                (dialog, selected) -> {
+                                    if (selected == 0) confirmSandboxDemo(order);
+                                    else if (selected == 1) {
+                                        confirmStatusChange(order, "cancelled", "Cancelled");
+                                    } else chooseStatus(order);
+                                })
+                        .setNegativeButton("Close", null)
+                        .show();
+            } else {
+                new AlertDialog.Builder(this)
+                        .setTitle("Card payment not verified")
+                        .setMessage(description + "\n\nCheck the transaction in PayHere.")
+                        .setNegativeButton("Close", null)
+                        .setNeutralButton("Cancel order", (d, w) ->
+                                confirmStatusChange(order, "cancelled", "Cancelled"))
+                        .setPositiveButton("Refresh", (d, w) -> chooseStatus(order))
+                        .show();
+            }
             return;
         }
         String[] codes = {"placed", "preparing", "out_for_delivery", "delivered", "cancelled"};
@@ -610,6 +632,51 @@ public class AdminOverviewActivity extends AppCompatActivity {
                         Math.min(8, order.getId().length())) + " to " + label + "?")
                 .setNegativeButton("Cancel", null)
                 .setPositiveButton("Update", (d, w) -> updateStatus(order.getId(), code))
+                .show();
+    }
+
+    private void confirmSandboxDemo(DocumentSnapshot order) {
+        new AlertDialog.Builder(this)
+                .setTitle("University demo only")
+                .setMessage("Continue this PayHere sandbox order without real payment " +
+                        "verification? It will be labeled DEMO — NOT PAID. " +
+                        "Never use this option for real orders.")
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton("Continue demo", (dialog, which) ->
+                        AdminAccess.verify(allowed -> {
+                            if (isFinishing() || isDestroyed()) return;
+                            if (!allowed) {
+                                Toast.makeText(this, "Admin access required",
+                                        Toast.LENGTH_LONG).show();
+                                finish();
+                                return;
+                            }
+                            db.runTransaction(tx -> {
+                                com.google.firebase.firestore.DocumentReference ref =
+                                        db.collection("orders").document(order.getId());
+                                DocumentSnapshot current = tx.get(ref);
+                                if (!current.exists() ||
+                                        !SandboxOrderPolicy.canConvertOlderPendingOrder(
+                                                current.getString("paymentMethod"),
+                                                current.getString("paymentStatus"),
+                                                current.getString("orderStatus"),
+                                                BuildConfig.DEBUG)) {
+                                    throw new com.google.firebase.firestore.FirebaseFirestoreException(
+                                            "Order no longer eligible for demo",
+                                            com.google.firebase.firestore.FirebaseFirestoreException
+                                                    .Code.FAILED_PRECONDITION);
+                                }
+                                tx.update(ref, "paymentStatus", SandboxOrderPolicy.DEMO_PAYMENT_STATUS,
+                                        "orderStatus", "placed");
+                                return null;
+                            }).addOnSuccessListener(v -> {
+                                Toast.makeText(this, "Order ready for sandbox demo",
+                                        Toast.LENGTH_SHORT).show();
+                                loadOverview();
+                            }).addOnFailureListener(e -> Toast.makeText(this,
+                                    "Demo update failed: " + e.getMessage(),
+                                    Toast.LENGTH_LONG).show());
+                        }))
                 .show();
     }
 

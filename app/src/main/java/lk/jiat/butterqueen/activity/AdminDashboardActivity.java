@@ -36,6 +36,8 @@ import java.util.Map;
 import java.util.Set;
 
 import lk.jiat.butterqueen.R;
+import lk.jiat.butterqueen.BuildConfig;
+import lk.jiat.butterqueen.payment.SandboxOrderPolicy;
 import lk.jiat.butterqueen.data.AdminAccess;
 import lk.jiat.butterqueen.model.OrderItem;
 import lk.jiat.butterqueen.model.Product;
@@ -187,7 +189,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
                         String title = value(doc.getString("customerName")) + " • "
                                 + doc.getId().substring(0, Math.min(6, doc.getId().length()));
                         String detail = date + " • " + value(doc.getString("orderStatus"))
-                                + " • " + value(payment);
+                                + " • " + paymentLabel(payment);
                         Double total = doc.getDouble("totalAmount");
                         MaterialCardView card = addCard(title, detail,
                                 String.format(Locale.getDefault(), "Rs. %.2f",
@@ -207,7 +209,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
                             .append("\nPhone: ").append(value(order.getString("customerPhone")))
                             .append("\nAddress: ").append(value(order.getString("deliveryAddress")))
                             .append("\nPayment: ").append(value(order.getString("paymentMethod")))
-                            .append(" / ").append(value(order.getString("paymentStatus")))
+                            .append(" / ").append(paymentLabel(order.getString("paymentStatus")))
                             .append("\nStatus: ").append(value(order.getString("orderStatus")))
                             .append("\n\nItems:");
                     for (DocumentSnapshot doc : snapshot) {
@@ -257,21 +259,39 @@ public class AdminDashboardActivity extends AppCompatActivity {
     private void showStatusChoices(DocumentSnapshot order) {
         String paymentMethod = order.getString("paymentMethod");
         String paymentStatus = order.getString("paymentStatus");
-        boolean awaitingPayment = "payhere".equals(paymentMethod)
-                && !"paid".equals(paymentStatus);
+        boolean awaitingPayment = !SandboxOrderPolicy.canManageOrder(
+                paymentMethod, paymentStatus, BuildConfig.DEBUG);
         if (awaitingPayment) {
-            new AlertDialog.Builder(this)
-                    .setTitle("Card payment not verified")
-                    .setMessage("PayHere hasn't verified this order yet. Only verified " +
-                            "card orders can be prepared or delivered.\n\n" +
-                            "Payment status: " + value(paymentStatus) +
-                            "\nPayHere reference: " + value(order.getString("paymentReference")) +
-                            "\n\nCheck PayHere for this reference, then Refresh.")
-                    .setNegativeButton("Close", null)
-                    .setNeutralButton("Cancel order", (d, w) ->
-                            confirmOrderStatus(order, "cancelled", "Cancelled"))
-                    .setPositiveButton("Refresh", (d, w) -> chooseStatus(order))
-                    .show();
+            boolean canDemo = SandboxOrderPolicy.canConvertOlderPendingOrder(
+                    paymentMethod, paymentStatus, order.getString("orderStatus"),
+                    BuildConfig.DEBUG);
+            String details = "This PayHere payment is not verified by the provider.\n\n" +
+                    "Payment status: " + value(paymentStatus) +
+                    "\nPayHere reference: " + value(order.getString("paymentReference"));
+            if (canDemo) {
+                new AlertDialog.Builder(this)
+                        .setTitle("Sandbox payment — viva demo")
+                        .setMessage(details + "\n\nContinue as a DEMO (not real payment) " +
+                                "to manage order delivery statuses.")
+                        .setItems(new String[]{"Continue as sandbox demo", "Cancel order",
+                                        "Refresh payment status"}, (dialog, which) -> {
+                                    if (which == 0) confirmSandboxDemo(order);
+                                    else if (which == 1) {
+                                        confirmOrderStatus(order, "cancelled", "Cancelled");
+                                    } else chooseStatus(order);
+                                })
+                        .setNegativeButton("Close", null)
+                        .show();
+            } else {
+                new AlertDialog.Builder(this)
+                        .setTitle("Card payment not verified")
+                        .setMessage(details + "\n\nCheck PayHere for this reference.")
+                        .setNegativeButton("Close", null)
+                        .setNeutralButton("Cancel order", (d, w) ->
+                                confirmOrderStatus(order, "cancelled", "Cancelled"))
+                        .setPositiveButton("Refresh", (d, w) -> chooseStatus(order))
+                        .show();
+            }
             return;
         }
 
@@ -315,6 +335,51 @@ public class AdminDashboardActivity extends AppCompatActivity {
                                         Toast.LENGTH_LONG).show());
                     });
                 }).show();
+    }
+
+    private void confirmSandboxDemo(DocumentSnapshot order) {
+        new AlertDialog.Builder(this)
+                .setTitle("University demo only")
+                .setMessage("Continue the PayHere sandbox order without real payment " +
+                        "verification? This order will be marked DEMO — NOT PAID.")
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton("Continue demo", (d, w) ->
+                        AdminAccess.verify(allowed -> {
+                            if (isFinishing() || isDestroyed()) return;
+                            if (!allowed) {
+                                Toast.makeText(this, "Admin access required",
+                                        Toast.LENGTH_LONG).show();
+                                finish();
+                                return;
+                            }
+                            firestore.runTransaction(tx -> {
+                                DocumentReference ref = firestore.collection("orders")
+                                        .document(order.getId());
+                                DocumentSnapshot current = tx.get(ref);
+                                if (!current.exists() ||
+                                        !SandboxOrderPolicy.canConvertOlderPendingOrder(
+                                                current.getString("paymentMethod"),
+                                                current.getString("paymentStatus"),
+                                                current.getString("orderStatus"),
+                                                BuildConfig.DEBUG)) {
+                                    throw new com.google.firebase.firestore.FirebaseFirestoreException(
+                                            "Order no longer eligible for demo",
+                                            com.google.firebase.firestore.FirebaseFirestoreException
+                                                    .Code.FAILED_PRECONDITION);
+                                }
+                                tx.update(ref, "paymentStatus", SandboxOrderPolicy.DEMO_PAYMENT_STATUS,
+                                        "orderStatus", "placed");
+                                return null;
+                            }).addOnSuccessListener(unused -> {
+                                if (isFinishing() || isDestroyed()) return;
+                                Toast.makeText(this, "Order ready for sandbox demo",
+                                        Toast.LENGTH_SHORT).show();
+                                if (showingOrders) loadContent();
+                            }).addOnFailureListener(e -> Toast.makeText(this,
+                                    "Demo update failed: " + e.getMessage(),
+                                    Toast.LENGTH_LONG).show());
+                        }))
+                .show();
     }
 
     private void showCategoryDialog() {
@@ -458,6 +523,12 @@ public class AdminDashboardActivity extends AppCompatActivity {
 
     private int dp(int value) {
         return (int) (getResources().getDisplayMetrics().density * value + 0.5f);
+    }
+
+    private String paymentLabel(String status) {
+        return SandboxOrderPolicy.DEMO_PAYMENT_STATUS.equals(status)
+                ? "Sandbox demo — not paid"
+                : value(status);
     }
 
     private String value(String text) {

@@ -39,6 +39,10 @@ public final class OrderReceipt {
     }
 
     public String paymentNotice() {
+        if ("sandbox_demo".equalsIgnoreCase(paymentStatus))
+            return "University demo only: PayHere sandbox SDK reported success. " +
+                    "No real payment was collected or independently verified. " +
+                    "This PDF is not proof of payment.";
         if ("paid".equalsIgnoreCase(paymentStatus))
             return "The order record lists payment as paid. Confirm with ButterQueen; this PDF is not proof of payment.";
         if ("payhere".equalsIgnoreCase(paymentMethod))
@@ -49,6 +53,9 @@ public final class OrderReceipt {
     }
 
     public String paymentState() {
+        if ("sandbox_demo".equalsIgnoreCase(paymentStatus)) {
+            return "Sandbox demo (not verified)";
+        }
         return value(paymentStatus).replace('_', ' ');
     }
 
