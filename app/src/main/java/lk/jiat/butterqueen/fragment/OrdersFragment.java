@@ -66,7 +66,14 @@ public class OrdersFragment extends Fragment {
     }
 
     private void loadOrders() {
+        if (binding == null) return;
+        if (listenerRegistration != null) {
+            listenerRegistration.remove();
+            listenerRegistration = null;
+        }
+        binding.ordersProgress.setVisibility(View.VISIBLE);
         if (firebaseAuth.getCurrentUser() == null) {
+            binding.ordersProgress.setVisibility(View.GONE);
             binding.emptyOrdersGroup.setVisibility(View.VISIBLE);
             binding.emptyOrdersTextView.setText("Please sign in to view your orders");
             binding.ordersRecyclerView.setVisibility(View.GONE);
@@ -81,10 +88,13 @@ public class OrdersFragment extends Fragment {
                     if (!isAdded() || binding == null) {
                         return;
                     }
+                    binding.ordersProgress.setVisibility(View.GONE);
 
                     if (error != null) {
                         binding.emptyOrdersGroup.setVisibility(View.VISIBLE);
-                        binding.emptyOrdersTextView.setText("Couldn't load your orders. Check your connection.");
+                        binding.ordersRecyclerView.setVisibility(View.GONE);
+                        binding.emptyOrdersTextView.setText(
+                                "Couldn't load your orders. They will refresh when you're online.");
                         Toast.makeText(requireContext(), "Could not refresh orders", Toast.LENGTH_SHORT).show();
                         return;
                     }
@@ -157,6 +167,7 @@ public class OrdersFragment extends Fragment {
 
     @Override
     public void onDestroyView() {
+        if (binding != null) binding.ordersRecyclerView.setAdapter(null);
         super.onDestroyView();
 
         if (listenerRegistration != null) {

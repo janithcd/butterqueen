@@ -283,7 +283,9 @@ public class AdminOverviewActivity extends AppCompatActivity {
     private TextView metric(LinearLayout r, String title, String initial,
                             String hint, boolean left) {
         MaterialCardView card = new MaterialCardView(this);
-        LinearLayout.LayoutParams cp = new LinearLayout.LayoutParams(0, dp(124), 1);
+        LinearLayout.LayoutParams cp = new LinearLayout.LayoutParams(
+                0, ViewGroup.LayoutParams.WRAP_CONTENT, 1);
+        card.setMinimumHeight(dp(124));
         if (left) cp.rightMargin = dp(6); else cp.leftMargin = dp(6);
         r.addView(card, cp);
         decorate(card);
@@ -301,7 +303,9 @@ public class AdminOverviewActivity extends AppCompatActivity {
 
     private void action(LinearLayout r, String name, boolean primary, Runnable fn, boolean left) {
         MaterialButton b = button(name, primary);
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, dp(53), 1);
+        b.setSingleLine(false);
+        b.setMaxLines(2);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, dp(64), 1);
         if (left) lp.rightMargin = dp(5); else lp.leftMargin = dp(5);
         r.addView(b, lp);
         b.setOnClickListener(v -> fn.run());

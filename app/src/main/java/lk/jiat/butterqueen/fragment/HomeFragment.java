@@ -53,6 +53,8 @@ public class HomeFragment extends Fragment implements SensorEventListener {
     private final List<Product> filteredProducts = new ArrayList<>();
 
     private FirebaseFirestore firestore;
+    private boolean loadingProducts;
+    private boolean productsLoadError;
     private SensorManager sensorManager;
     private Sensor accelerometer;
     private long lastShakeAt;
@@ -209,6 +211,13 @@ public class HomeFragment extends Fragment implements SensorEventListener {
             filterProducts();
         });
 
+        binding.emptyProductsActionButton.setOnClickListener(v -> {
+            if (productsLoadError) {
+                loadProducts();
+            } else {
+                binding.seeAllTextView.performClick();
+            }
+        });
         binding.seeAllTextView.setOnClickListener(v -> {
             selectedCategory = "ALL";
             selectedCategoryName = "ALL";
@@ -250,10 +259,18 @@ public class HomeFragment extends Fragment implements SensorEventListener {
     }
 
     private void loadProducts() {
+        if (binding == null) return;
+        loadingProducts = true;
+        productsLoadError = false;
+        binding.homeProductsProgress.setVisibility(View.VISIBLE);
+        binding.emptyProductsGroup.setVisibility(View.GONE);
         firestore.collection("products")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     if (binding == null) return;
+                    loadingProducts = false;
+                    productsLoadError = false;
+                    binding.homeProductsProgress.setVisibility(View.GONE);
                     allProducts.clear();
 
                     for (DocumentSnapshot doc : queryDocumentSnapshots.getDocuments()) {
@@ -268,14 +285,14 @@ public class HomeFragment extends Fragment implements SensorEventListener {
 
                     filterProducts();
 
-                    if (allProducts.isEmpty() && isAdded()) {
-                        Toast.makeText(requireContext(), "No products found", Toast.LENGTH_LONG).show();
-                    }
+                    // An accessible empty-state card explains the absence of products.
                 })
                 .addOnFailureListener(e -> {
-                    if (isAdded()) {
-                        Toast.makeText(requireContext(), "Failed to load products: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                    }
+                    if (binding == null) return;
+                    loadingProducts = false;
+                    productsLoadError = true;
+                    binding.homeProductsProgress.setVisibility(View.GONE);
+                    filterProducts();
                 });
     }
 
@@ -310,8 +327,17 @@ public class HomeFragment extends Fragment implements SensorEventListener {
         }
 
         productAdapter.notifyDataSetChanged();
-        binding.emptyProductsTextView.setVisibility(
-                filteredProducts.isEmpty() ? View.VISIBLE : View.GONE);
+        boolean showEmpty = !loadingProducts && (productsLoadError || filteredProducts.isEmpty());
+        binding.emptyProductsGroup.setVisibility(showEmpty ? View.VISIBLE : View.GONE);
+        binding.emptyProductsTextView.setText(productsLoadError
+                ? "Couldn't load the bakery catalog. Check your connection and try again."
+                : allProducts.isEmpty()
+                    ? "Fresh treats are coming soon. Check back again!"
+                    : "No treats match those filters.");
+        binding.emptyProductsActionButton.setText(productsLoadError
+                ? "Try again" : "Clear filters");
+        binding.emptyProductsActionButton.setVisibility(!productsLoadError && allProducts.isEmpty()
+                ? View.GONE : View.VISIBLE);
     }
 
     @Override

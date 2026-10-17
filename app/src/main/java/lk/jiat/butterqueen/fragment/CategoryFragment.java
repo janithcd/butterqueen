@@ -53,6 +53,7 @@ public class CategoryFragment extends Fragment {
             }
         });
         binding.recyclerViewCategories.setAdapter(adapter);
+        binding.categoriesRetry.setOnClickListener(v -> loadCategories());
     }
 
     @Override
@@ -62,10 +63,15 @@ public class CategoryFragment extends Fragment {
     }
 
     private void loadCategories() {
+        if (binding == null) return;
+        binding.categoriesProgress.setVisibility(View.VISIBLE);
+        binding.categoriesEmptyState.setVisibility(View.GONE);
+        binding.categoriesRetry.setVisibility(View.GONE);
         firestore.collection("categories")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     if (binding == null) return;
+                    binding.categoriesProgress.setVisibility(View.GONE);
                     categoryList.clear();
 
                     for (DocumentSnapshot doc : queryDocumentSnapshots.getDocuments()) {
@@ -78,19 +84,25 @@ public class CategoryFragment extends Fragment {
 
                     adapter.notifyDataSetChanged();
 
-                    if (categoryList.isEmpty() && isAdded()) {
-                        Toast.makeText(requireContext(), "No categories found", Toast.LENGTH_LONG).show();
-                    }
+                    boolean isEmpty = categoryList.isEmpty();
+                    binding.categoriesEmptyState.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+                    binding.recyclerViewCategories.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+                    binding.categoriesFeedback.setText("No categories yet. Check back soon.");
+                    binding.categoriesRetry.setVisibility(View.GONE);
                 })
                 .addOnFailureListener(e -> {
-                    if (isAdded()) {
-                        Toast.makeText(requireContext(), "Failed to load categories: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                    }
+                    if (binding == null) return;
+                    binding.categoriesProgress.setVisibility(View.GONE);
+                    binding.categoriesEmptyState.setVisibility(View.VISIBLE);
+                    binding.categoriesFeedback.setText("Couldn't load categories. Please check your connection.");
+                    binding.categoriesRetry.setVisibility(View.VISIBLE);
+                    binding.recyclerViewCategories.setVisibility(View.GONE);
                 });
     }
 
     @Override
     public void onDestroyView() {
+        if (binding != null) binding.recyclerViewCategories.setAdapter(null);
         super.onDestroyView();
         binding = null;
     }
