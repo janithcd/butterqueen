@@ -584,13 +584,13 @@ public class AdminOverviewActivity extends AppCompatActivity {
             boolean canDemo = SandboxOrderPolicy.canConvertOlderPendingOrder(
                     method, payment, order.getString("orderStatus"), BuildConfig.DEBUG);
             String description = "Order #" + shortId +
-                    " has not been verified by the PayHere payment server.\\n\\n" +
+                    " has not been verified by the PayHere payment server.\n\n" +
                     "Payment status: " + (payment == null ? "Unknown" : payment) +
-                    "\\nPayHere reference: " + (reference == null ? "Unavailable" : reference);
+                    "\nPayHere reference: " + (reference == null ? "Unavailable" : reference);
             if (canDemo) {
                 new AlertDialog.Builder(this)
                         .setTitle("Sandbox payment — viva demo")
-                        .setMessage(description + "\\n\\nFor this university demo only, " +
+                        .setMessage(description + "\n\nFor this university demo only, " +
                                 "you can mark the sandbox attempt as a DEMO (not a paid transaction) " +
                                 "and continue managing the order.")
                         .setItems(new String[]{"Continue as sandbox demo",
@@ -606,7 +606,7 @@ public class AdminOverviewActivity extends AppCompatActivity {
             } else {
                 new AlertDialog.Builder(this)
                         .setTitle("Card payment not verified")
-                        .setMessage(description + "\\n\\nCheck the transaction in PayHere.")
+                        .setMessage(description + "\n\nCheck the transaction in PayHere.")
                         .setNegativeButton("Close", null)
                         .setNeutralButton("Cancel order", (d, w) ->
                                 confirmStatusChange(order, "cancelled", "Cancelled"))
