@@ -22,12 +22,14 @@
             android:text="Preferred weight" android:textColor="@color/md_theme_onBackground" />
         <Spinner android:id="@+id/customWeight" android:layout_width="match_parent" android:layout_height="52dp" />
         <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.ButterQueen.TextField"
             android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Required date *">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/customDate" android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:inputType="none" android:focusable="false" android:clickable="true" />
         </com.google.android.material.textfield.TextInputLayout>
         <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.ButterQueen.TextField"
             android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp"
             android:hint="Message on cake (optional)">
             <com.google.android.material.textfield.TextInputEditText
@@ -35,6 +37,7 @@
                 android:maxLength="120" android:inputType="textCapSentences" />
         </com.google.android.material.textfield.TextInputLayout>
         <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.ButterQueen.TextField"
             android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp"
             android:hint="Design notes / colours (optional)">
             <com.google.android.material.textfield.TextInputEditText

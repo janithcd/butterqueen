@@ -440,7 +440,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START);
         } else {
-            super.onBackPressed();
+            Fragment current = getSupportFragmentManager()
+                    .findFragmentById(R.id.contentFrame);
+            if (current != null && !(current instanceof HomeFragment)) {
+                // Secondary destinations are root-level fragment replacements, not
+                // back-stack entries. Return to catalog instead of exiting the app.
+                openCatalog();
+            } else {
+                super.onBackPressed();
+            }
         }
     }
 
