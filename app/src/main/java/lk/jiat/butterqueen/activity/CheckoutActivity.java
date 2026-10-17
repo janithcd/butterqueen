@@ -46,6 +46,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import lk.jiat.butterqueen.R;
+import lk.jiat.butterqueen.BuildConfig;
 import lk.jiat.butterqueen.notification.OrderNotificationHelper;
 import lk.jiat.butterqueen.data.CartManager;
 import lk.jiat.butterqueen.model.CartItem;
@@ -503,9 +504,11 @@ public class CheckoutActivity extends AppCompatActivity {
                                      String address,
                                      String note) {
 
+        // Debug builds run a free university-viva sandbox demo. Release builds
+        // retain the server-verified PayHere flow and require notify_url.
         if (PayHereConfig.MERCHANT_ID.isEmpty() ||
-                !PayHereConfig.NOTIFY_URL.startsWith("https://")) {
-            Toast.makeText(this, "Card checkout is unavailable until PayHere verification is configured",
+                (!BuildConfig.DEBUG && !PayHereConfig.NOTIFY_URL.startsWith("https://"))) {
+            Toast.makeText(this, "PayHere sandbox merchant configuration is missing",
                     Toast.LENGTH_LONG).show();
             return;
         }
@@ -532,7 +535,9 @@ public class CheckoutActivity extends AppCompatActivity {
 
         InitRequest req = new InitRequest();
         req.setMerchantId(PayHereConfig.MERCHANT_ID);
-        req.setNotifyUrl(PayHereConfig.NOTIFY_URL);
+        if (!BuildConfig.DEBUG) {
+            req.setNotifyUrl(PayHereConfig.NOTIFY_URL);
+        }
         req.setCurrency("LKR");
         req.setAmount(totalAmount);
         req.setOrderId(pendingPaymentReference);
@@ -564,17 +569,27 @@ public class CheckoutActivity extends AppCompatActivity {
             ));
         }
 
-        // Remain in sandbox while integrating and testing signed callbacks.
-        // Never mark payments as "paid" from the local SDK success callback.
-        saveOrderToFirestore(currentCart, fullName, phone, address, note,
-                "payhere", pendingPaymentReference, "verification_pending",
-                pendingOrderRef, () -> {
-                    placeOrderButton.setText("Confirm payment in PayHere");
-                    PHConfigs.setBaseUrl(PHConfigs.SANDBOX_URL);
-                    Intent intent = new Intent(this, PHMainActivity.class);
-                    intent.putExtra(PHConstants.INTENT_EXTRA_DATA, req);
-                    startActivityForResult(intent, PAYHERE_REQUEST);
-                });
+        // PayHere always runs in sandbox; no real money is collected.
+        // In debug, create a clearly labeled *demo* order only on SDK success.
+        // Release keeps the existing signed server verification workflow.
+        if (BuildConfig.DEBUG) {
+            placeOrderButton.setEnabled(false);
+            placeOrderButton.setText("Opening PayHere sandbox...");
+            PHConfigs.setBaseUrl(PHConfigs.SANDBOX_URL);
+            Intent intent = new Intent(this, PHMainActivity.class);
+            intent.putExtra(PHConstants.INTENT_EXTRA_DATA, req);
+            startActivityForResult(intent, PAYHERE_REQUEST);
+        } else {
+            saveOrderToFirestore(currentCart, fullName, phone, address, note,
+                    "payhere", pendingPaymentReference, "verification_pending",
+                    pendingOrderRef, () -> {
+                        placeOrderButton.setText("Confirm payment in PayHere");
+                        PHConfigs.setBaseUrl(PHConfigs.SANDBOX_URL);
+                        Intent intent = new Intent(this, PHMainActivity.class);
+                        intent.putExtra(PHConstants.INTENT_EXTRA_DATA, req);
+                        startActivityForResult(intent, PAYHERE_REQUEST);
+                    });
+        }
     }
 
     @Override
@@ -591,6 +606,25 @@ public class CheckoutActivity extends AppCompatActivity {
 
         boolean sdkSuccess = resultCode == Activity.RESULT_OK &&
                 response != null && response.isSuccess();
+        if (BuildConfig.DEBUG) {
+            if (sdkSuccess) {
+                // DEMO ONLY: the SDK's sandbox result is not independently
+                // verified by PayHere. Never use paymentStatus="paid" here.
+                saveOrderToFirestore(pendingCartItems, pendingFullName, pendingPhone,
+                        pendingAddress, pendingNote, "payhere",
+                        pendingPaymentReference, "sandbox_demo");
+            } else {
+                placeOrderButton.setEnabled(true);
+                placeOrderButton.setText("Place Order");
+                new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                        .setTitle("Sandbox payment not completed")
+                        .setMessage("No demo order was placed. You can try again " +
+                                "with a PayHere sandbox test card.")
+                        .setPositiveButton("OK", null)
+                        .show();
+            }
+            return;
+        }
         if (sdkSuccess) {
             // Clear the cart only when the SDK reports success. Payment remains
             // unverified until the signed PayHere notify_url is processed.
@@ -684,7 +718,8 @@ public class CheckoutActivity extends AppCompatActivity {
         orderMap.put("paymentMethod", paymentMethod);
         orderMap.put("paymentReference", paymentReference);
         orderMap.put("paymentStatus", paymentStatus);
-        orderMap.put("orderStatus", "payhere".equals(paymentMethod) ? "payment_pending" : "placed");
+        orderMap.put("orderStatus", "payhere".equals(paymentMethod)
+                && !"sandbox_demo".equals(paymentStatus) ? "payment_pending" : "placed");
         orderMap.put("createdAtMillis", createdAtMillis);
 
         batch.set(orderRef, orderMap);
@@ -708,7 +743,7 @@ public class CheckoutActivity extends AppCompatActivity {
             batch.set(itemRef, itemMap);
 
             // Keep the cart if the customer cancels the card checkout.
-            if (!"payhere".equals(paymentMethod) &&
+            if ((!"payhere".equals(paymentMethod) || "sandbox_demo".equals(paymentStatus)) &&
                     item.getCartItemId() != null && !item.getCartItemId().trim().isEmpty()) {
                 DocumentReference cartDocRef = firestore.collection("users")
                         .document(userId)
@@ -730,9 +765,12 @@ public class CheckoutActivity extends AppCompatActivity {
                     CartManager.clearLocalCache();
 
                     String message =
-                            ("payhere".equals(paymentMethod)
-                                    ? "Sandbox payment submitted. Awaiting independent verification.\n\n"
-                                    : "Order placed successfully!\n\n") +
+                            ("sandbox_demo".equals(paymentStatus)
+                                    ? "PayHere sandbox payment successful (DEMO ONLY). " +
+                                      "No real card payment was verified.\n\n"
+                                    : "payhere".equals(paymentMethod)
+                                        ? "Sandbox payment submitted. Awaiting independent verification.\n\n"
+                                        : "Order placed successfully!\n\n") +
                                     "Customer: " + fullName + "\n" +
                                     "Phone: " + phone + "\n" +
                                     "Address: " + address + "\n" +
@@ -746,8 +784,11 @@ public class CheckoutActivity extends AppCompatActivity {
                             .setMessage(message)
                             .setCancelable(false)
                             .setPositiveButton("OK", (dialog, which) -> {
-                                Toast.makeText(this, "payhere".equals(paymentMethod)
-                                                ? "Payment verification pending" : "Thank you for your order",
+                                Toast.makeText(this, "sandbox_demo".equals(paymentStatus)
+                                                ? "Demo order placed successfully"
+                                                : "payhere".equals(paymentMethod)
+                                                    ? "Payment verification pending"
+                                                    : "Thank you for your order",
                                         Toast.LENGTH_SHORT).show();
                                 finish();
                             })
