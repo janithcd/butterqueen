@@ -2,6 +2,7 @@ package lk.jiat.butterqueen.fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
+import lk.jiat.butterqueen.activity.MainActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -53,6 +54,11 @@ public class WishlistFragment extends Fragment {
 
         binding.wishlistRecyclerView.setAdapter(adapter);
 
+        binding.emptyWishlistBrowseButton.setOnClickListener(v -> {
+            if (getActivity() instanceof MainActivity)
+                ((MainActivity) getActivity()).openCatalog();
+        });
+
         refreshWishlist();
     }
 
@@ -65,7 +71,7 @@ public class WishlistFragment extends Fragment {
         }
 
         boolean isEmpty = wishlistProducts.isEmpty();
-        binding.emptyWishlistTextView.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+        binding.emptyWishlistGroup.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
         binding.wishlistRecyclerView.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
     }
 
@@ -78,6 +84,7 @@ public class WishlistFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        if (binding != null) binding.wishlistRecyclerView.setAdapter(null);
         binding = null;
     }
 }

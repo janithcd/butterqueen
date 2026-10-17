@@ -26,18 +26,39 @@
         android:textColor="@color/md_theme_onSurfaceVariant"
         android:textSize="14sp" />
 
-    <TextView
-        android:id="@+id/emptyOrdersTextView"
-        android:minHeight="128dp"
-        android:padding="18dp"
+    <LinearLayout
+        android:id="@+id/emptyOrdersGroup"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:minHeight="220dp"
+        android:layout_marginTop="16dp"
         android:gravity="center"
-        android:text="No orders found"
-        android:textColor="@color/md_theme_onBackground"
-        android:textSize="16sp"
-        android:visibility="gone" />
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:visibility="gone">
+        <ImageView
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:src="@drawable/ic_bq_orders"
+            android:tint="@color/md_theme_primary"
+            android:importantForAccessibility="no" />
+        <TextView
+            android:id="@+id/emptyOrdersTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:gravity="center"
+            android:text="No orders yet. Your sweet journey starts here."
+            android:textColor="@color/md_theme_onSurfaceVariant"
+            android:textSize="15sp" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/emptyOrdersBrowseButton"
+            style="@style/Widget.ButterQueen.Button.Outlined"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="Start shopping" />
+    </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/ordersRecyclerView"

@@ -347,6 +347,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         loadFragment(fragment, category.getName());
     }
 
+    /** Shared, accessible browse action for empty cart/wishlist/order states. */
+    public void openCatalog() {
+        loadFragment(new HomeFragment(), "Home");
+        if (drawerLayout != null) drawerLayout.closeDrawer(GravityCompat.START);
+    }
+
     public void openHelpScreen() {
         loadFragment(new HelpFragment(), "Help");
     }

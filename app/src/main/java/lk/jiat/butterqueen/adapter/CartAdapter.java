@@ -79,15 +79,21 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
         );
 
         holder.plusButton.setOnClickListener(v -> {
-            if (listener != null) listener.onIncrease(position);
+            int current = holder.getBindingAdapterPosition();
+            if (listener != null && current != RecyclerView.NO_POSITION)
+                listener.onIncrease(current);
         });
 
         holder.minusButton.setOnClickListener(v -> {
-            if (listener != null) listener.onDecrease(position);
+            int current = holder.getBindingAdapterPosition();
+            if (listener != null && current != RecyclerView.NO_POSITION)
+                listener.onDecrease(current);
         });
 
         holder.removeButton.setOnClickListener(v -> {
-            if (listener != null) listener.onRemove(position);
+            int current = holder.getBindingAdapterPosition();
+            if (listener != null && current != RecyclerView.NO_POSITION)
+                listener.onRemove(current);
         });
     }
 

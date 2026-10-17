@@ -2,6 +2,7 @@ package lk.jiat.butterqueen.fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
+import lk.jiat.butterqueen.activity.MainActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -94,6 +95,11 @@ public class cartFragment extends Fragment {
 
         binding.cartRecyclerView.setAdapter(adapter);
 
+        binding.emptyCartBrowseButton.setOnClickListener(v -> {
+            if (getActivity() instanceof MainActivity)
+                ((MainActivity) getActivity()).openCatalog();
+        });
+
         binding.checkoutButton.setOnClickListener(v -> {
             if (CartManager.isEmpty()) {
                 Toast.makeText(requireContext(), "Your cart is empty", Toast.LENGTH_SHORT).show();
@@ -145,7 +151,7 @@ public class cartFragment extends Fragment {
         );
 
         boolean isEmpty = CartManager.isEmpty();
-        binding.emptyCartTextView.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+        binding.emptyCartGroup.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
         binding.cartRecyclerView.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
         binding.checkoutButton.setEnabled(!isEmpty);
     }
@@ -153,6 +159,7 @@ public class cartFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        if (binding != null) binding.cartRecyclerView.setAdapter(null);
         binding = null;
     }
 }

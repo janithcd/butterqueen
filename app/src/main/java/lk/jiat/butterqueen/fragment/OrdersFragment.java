@@ -1,6 +1,7 @@
 package lk.jiat.butterqueen.fragment;
 
 import android.os.Bundle;
+import lk.jiat.butterqueen.activity.MainActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -56,12 +57,17 @@ public class OrdersFragment extends Fragment {
                 startActivity(OrderReceiptActivity.intentFor(requireContext(), order.getOrderId())));
         binding.ordersRecyclerView.setAdapter(adapter);
 
+        binding.emptyOrdersBrowseButton.setOnClickListener(v -> {
+            if (getActivity() instanceof MainActivity)
+                ((MainActivity) getActivity()).openCatalog();
+        });
+
         loadOrders();
     }
 
     private void loadOrders() {
         if (firebaseAuth.getCurrentUser() == null) {
-            binding.emptyOrdersTextView.setVisibility(View.VISIBLE);
+            binding.emptyOrdersGroup.setVisibility(View.VISIBLE);
             binding.emptyOrdersTextView.setText("Please sign in to view your orders");
             binding.ordersRecyclerView.setVisibility(View.GONE);
             return;
@@ -77,7 +83,9 @@ public class OrdersFragment extends Fragment {
                     }
 
                     if (error != null) {
-                        Toast.makeText(requireContext(), "Failed to load orders: " + error.getMessage(), Toast.LENGTH_LONG).show();
+                        binding.emptyOrdersGroup.setVisibility(View.VISIBLE);
+                        binding.emptyOrdersTextView.setText("Couldn't load your orders. Check your connection.");
+                        Toast.makeText(requireContext(), "Could not refresh orders", Toast.LENGTH_SHORT).show();
                         return;
                     }
 
@@ -95,11 +103,11 @@ public class OrdersFragment extends Fragment {
                     adapter.notifyDataSetChanged();
 
                     boolean isEmpty = orderList.isEmpty();
-                    binding.emptyOrdersTextView.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+                    binding.emptyOrdersGroup.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
                     binding.ordersRecyclerView.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
 
                     if (isEmpty) {
-                        binding.emptyOrdersTextView.setText("No orders yet");
+                        binding.emptyOrdersTextView.setText("No orders yet. Your sweet journey starts here.");
                     }
                 });
     }

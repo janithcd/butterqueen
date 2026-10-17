@@ -220,15 +220,39 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
+        <LinearLayout
+        android:id="@+id/emptyProductsGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="220dp"
+        android:layout_marginTop="16dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:visibility="gone">
+        <ImageView
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:src="@drawable/ic_bq_search"
+            android:tint="@color/md_theme_primary"
+            android:importantForAccessibility="no" />
         <TextView
             android:id="@+id/emptyProductsTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
             android:gravity="center"
-            android:padding="24dp"
             android:text="No treats match your search yet."
-            android:textColor="@color/md_theme_onBackground"
-            android:visibility="gone" />
+            android:textColor="@color/md_theme_onSurfaceVariant"
+            android:textSize="15sp" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/emptyProductsActionButton"
+            style="@style/Widget.ButterQueen.Button.Outlined"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="Clear filters" />
+    </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerViewCakes"

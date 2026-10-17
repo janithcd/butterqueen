@@ -321,6 +321,10 @@ public class HomeFragment extends Fragment implements SensorEventListener {
             notificationBell = null;
         }
         super.onDestroyView();
+        if (binding != null) {
+            binding.recyclerViewCakes.setAdapter(null);
+            binding.recyclerViewHomeCategories.setAdapter(null);
+        }
         binding = null;
     }
 }
