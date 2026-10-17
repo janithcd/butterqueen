@@ -25,6 +25,15 @@ rules, user notifications, FCM token permissions and other rules. Back up live
 rules first. Do not replace full rules with `firestore.rules.example`;
 its examples are not automatically identical to the live project.
 
+For the exact **Butter Queen viva rules previously shared in chat**, a
+**complete copy/paste candidate** is supplied at
+`security/firestore.rules.butter-queen-complete-viva.example`. It includes
+the customer account/cart, notification, push token, product review, PayHere
+sandbox, order items, and **customCakeRequests** blocks. Compare it against
+your saved Firebase Console rules before publishing; never use it for live
+payment processing. If your rules have changed since the version provided,
+merge the nested review block instead of replacing everything.
+
 **Test:** log in as a customer with a delivered order containing Chocolate
 Cake; open its Product Details -> Reviews OR delivered receipt -> Rate &
 Review. The stars/text form should unlock for that purchased item and publish
