@@ -6,8 +6,8 @@ ButterQueen is a Java Android cake ordering app. The current code includes Fireb
 
 1. Open this folder in Android Studio. Keep the generated `local.properties` file outside Git.
 2. Add `app/google-services.json` from the correct Firebase Android app, whose package name is `lk.jiat.butterqueen`. This file is intentionally ignored by Git. Do not confuse it with a Firebase Admin service-account JSON, which must never be placed in an Android app.
-3. Copy the two entries from `local.properties.example` into your existing `local.properties`. Set `MAPS_API_KEY` to a newly issued key restricted to the **Maps SDK for Android**, package `lk.jiat.butterqueen`, and the SHA-1 of the signing certificate(s). Set `PAYHERE_MERCHANT_ID` to the sandbox Merchant ID if you want to test online checkout.
-4. Sync Gradle and run the app. Missing local values allow a build, but maps or sandbox checkout will be unavailable.
+3. Copy the entries from `local.properties.example` into your existing `local.properties`. Restrict `MAPS_API_KEY` to the **Maps SDK for Android**, package `lk.jiat.butterqueen`, and your signing SHA-1. For PayHere sandbox cards, set `PAYHERE_MERCHANT_ID` and the deployed Firebase Function's public `PAYHERE_NOTIFY_URL`. Read [PayHere verification setup](docs/payhere-card-verification.md) first.
+4. Sync Gradle and run the app. Missing local values allow a build, but maps or PayHere checkout will be unavailable.
 
 ## Catalog and ordering
 
@@ -19,8 +19,8 @@ ButterQueen is a Java Android cake ordering app. The current code includes Fireb
 
 ## Payment and data safety
 
-- The client uses the PayHere **sandbox URL only**. A successful SDK activity result records `verification_pending`, never `paid`.
-- There is no trusted payment notification endpoint in this repository. Do not switch to live payments until a server verifies PayHere's notification signature and updates the order.
+- The client uses the PayHere **sandbox URL only**. It creates a pending order before PayHere opens and **never** marks a payment `paid` from an SDK result.
+- The `payHereNotify` Cloud Function now verifies the merchant signature and correct order amount, currency and reference before marking a card order `paid`. **It must be deployed and configured** separately; GitHub source code alone cannot verify any payments. See [PayHere setup and legacy-order guidance](docs/payhere-card-verification.md). Keep live payments disabled until totals are server-authoritative.
 - Checkout rechecks current product availability, unit, and price from Firestore before starting an order. This catches stale carts; it is still a client check. A trusted server must recalculate item and delivery totals before charging or fulfilling a real order. Client-submitted totals are not authoritative.
 - Review and deploy Firebase Firestore and Storage rules in the actual Firebase project. Candidate rules and their assumptions are in `security/`; they are **not deployed** by this repository.
 - Account deletion in the current Android client does not reliably purge nested Firestore data, orders, and profile images. A trusted backend deletion workflow is required before calling that a complete deletion.
