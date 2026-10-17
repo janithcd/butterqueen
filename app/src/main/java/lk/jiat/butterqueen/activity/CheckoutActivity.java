@@ -503,8 +503,10 @@ public class CheckoutActivity extends AppCompatActivity {
                                      String address,
                                      String note) {
 
-        if (PayHereConfig.MERCHANT_ID.isEmpty()) {
-            Toast.makeText(this, "PayHere sandbox is not configured on this device", Toast.LENGTH_LONG).show();
+        if (PayHereConfig.MERCHANT_ID.isEmpty() ||
+                !PayHereConfig.NOTIFY_URL.startsWith("https://")) {
+            Toast.makeText(this, "Card checkout is unavailable until PayHere verification is configured",
+                    Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -518,7 +520,10 @@ public class CheckoutActivity extends AppCompatActivity {
         String firstName = nameParts.length > 0 ? nameParts[0] : "Customer";
         String lastName = nameParts.length > 1 ? nameParts[1] : ".";
 
-        pendingPaymentReference = "BQ-" + System.currentTimeMillis();
+        // The order MUST exist before the payment SDK starts: PayHere may
+        // send its server notification before the Android callback returns.
+        DocumentReference pendingOrderRef = firestore.collection("orders").document();
+        pendingPaymentReference = "BQ-" + pendingOrderRef.getId();
         pendingFullName = fullName;
         pendingPhone = phone;
         pendingAddress = address;
@@ -527,6 +532,7 @@ public class CheckoutActivity extends AppCompatActivity {
 
         InitRequest req = new InitRequest();
         req.setMerchantId(PayHereConfig.MERCHANT_ID);
+        req.setNotifyUrl(PayHereConfig.NOTIFY_URL);
         req.setCurrency("LKR");
         req.setAmount(totalAmount);
         req.setOrderId(pendingPaymentReference);
@@ -558,48 +564,70 @@ public class CheckoutActivity extends AppCompatActivity {
             ));
         }
 
-        // Sandbox only until a trusted backend verifies payment notifications.
-        PHConfigs.setBaseUrl(PHConfigs.SANDBOX_URL);
-
-        Intent intent = new Intent(this, PHMainActivity.class);
-        intent.putExtra(PHConstants.INTENT_EXTRA_DATA, req);
-        startActivityForResult(intent, PAYHERE_REQUEST);
+        // Remain in sandbox while integrating and testing signed callbacks.
+        // Never mark payments as "paid" from the local SDK success callback.
+        saveOrderToFirestore(currentCart, fullName, phone, address, note,
+                "payhere", pendingPaymentReference, "verification_pending",
+                pendingOrderRef, () -> {
+                    placeOrderButton.setText("Confirm payment in PayHere");
+                    PHConfigs.setBaseUrl(PHConfigs.SANDBOX_URL);
+                    Intent intent = new Intent(this, PHMainActivity.class);
+                    intent.putExtra(PHConstants.INTENT_EXTRA_DATA, req);
+                    startActivityForResult(intent, PAYHERE_REQUEST);
+                });
     }
 
     @Override
     @SuppressWarnings("unchecked")
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode != PAYHERE_REQUEST) return;
 
-        if (requestCode == PAYHERE_REQUEST
-                && data != null
-                && data.hasExtra(PHConstants.INTENT_EXTRA_RESULT)) {
+        PHResponse<StatusResponse> response = null;
+        if (data != null && data.hasExtra(PHConstants.INTENT_EXTRA_RESULT)) {
+            response = (PHResponse<StatusResponse>)
+                    data.getSerializableExtra(PHConstants.INTENT_EXTRA_RESULT);
+        }
 
-            PHResponse<StatusResponse> response =
-                    (PHResponse<StatusResponse>) data.getSerializableExtra(PHConstants.INTENT_EXTRA_RESULT);
+        boolean sdkSuccess = resultCode == Activity.RESULT_OK &&
+                response != null && response.isSuccess();
+        if (sdkSuccess) {
+            // Clear the cart only when the SDK reports success. Payment remains
+            // unverified until the signed PayHere notify_url is processed.
+            CartManager.clearLocalCache();
+            clearPayHereCart();
+        }
 
-            if (resultCode == Activity.RESULT_OK) {
-                if (response != null && response.isSuccess()) {
-                    saveOrderToFirestore(
-                            pendingCartItems,
-                            pendingFullName,
-                            pendingPhone,
-                            pendingAddress,
-                            pendingNote,
-                            "payhere",
-                            pendingPaymentReference,
-                            "verification_pending"
-                    );
+        String message = sdkSuccess
+                ? "PayHere reported success. Your order is waiting for secure " +
+                  "server-side payment verification. You can track its status in Orders."
+                : "Payment was not confirmed in the app. Your order remains " +
+                  "pending verification. Check your PayHere transaction and Orders " +
+                  "before trying again, to avoid a duplicate payment.";
 
-                } else {
-                    String msg = response != null ? response.toString() : "Payment failed";
-                    Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
-                }
+        new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                .setTitle(sdkSuccess ? "Payment submitted" : "Payment not confirmed")
+                .setMessage(message + "\n\nReference: " + pendingPaymentReference)
+                .setCancelable(false)
+                .setPositiveButton("View orders later", (dialog, which) -> finish())
+                .show();
+    }
 
-            } else if (resultCode == Activity.RESULT_CANCELED) {
-                String msg = response != null ? response.toString() : "User canceled the payment";
-                Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
-            }
+    private void clearPayHereCart() {
+        if (firebaseAuth.getCurrentUser() == null) return;
+        String userId = firebaseAuth.getCurrentUser().getUid();
+        WriteBatch cartBatch = firestore.batch();
+        int count = 0;
+        for (CartItem item : pendingCartItems) {
+            if (item.getCartItemId() == null || item.getCartItemId().trim().isEmpty()) continue;
+            cartBatch.delete(firestore.collection("users").document(userId)
+                    .collection("cart").document(item.getCartItemId()));
+            count++;
+        }
+        if (count > 0) {
+            cartBatch.commit().addOnFailureListener(e ->
+                    android.util.Log.w("ButterQueenCheckout",
+                            "Could not clear cloud cart after checkout", e));
         }
     }
 
@@ -611,6 +639,20 @@ public class CheckoutActivity extends AppCompatActivity {
                                       String paymentMethod,
                                       String paymentReference,
                                       String paymentStatus) {
+        saveOrderToFirestore(currentCart, fullName, phone, address, note, paymentMethod,
+                paymentReference, paymentStatus, firestore.collection("orders").document(), null);
+    }
+
+    private void saveOrderToFirestore(List<CartItem> currentCart,
+                                      String fullName,
+                                      String phone,
+                                      String address,
+                                      String note,
+                                      String paymentMethod,
+                                      String paymentReference,
+                                      String paymentStatus,
+                                      DocumentReference orderRef,
+                                      Runnable onSaved) {
 
         placeOrderButton.setEnabled(false);
         placeOrderButton.setText("Placing Order...");
@@ -626,7 +668,6 @@ public class CheckoutActivity extends AppCompatActivity {
         double totalAmount = subtotal + currentDeliveryFee;
         int totalItems = currentCart.size();
 
-        DocumentReference orderRef = firestore.collection("orders").document();
         WriteBatch batch = firestore.batch();
 
         Map<String, Object> orderMap = new HashMap<>();
@@ -666,7 +707,9 @@ public class CheckoutActivity extends AppCompatActivity {
 
             batch.set(itemRef, itemMap);
 
-            if (item.getCartItemId() != null && !item.getCartItemId().trim().isEmpty()) {
+            // Keep the cart if the customer cancels the card checkout.
+            if (!"payhere".equals(paymentMethod) &&
+                    item.getCartItemId() != null && !item.getCartItemId().trim().isEmpty()) {
                 DocumentReference cartDocRef = firestore.collection("users")
                         .document(userId)
                         .collection("cart")
@@ -680,6 +723,10 @@ public class CheckoutActivity extends AppCompatActivity {
                 .addOnSuccessListener(unused -> {
                     OrderNotificationHelper.showOrderPlaced(
                             this, orderRef.getId(), "payhere".equals(paymentMethod));
+                    if (onSaved != null) {
+                        onSaved.run();
+                        return;
+                    }
                     CartManager.clearLocalCache();
 
                     String message =
