@@ -1,4 +1,5 @@
 package lk.jiat.butterqueen.activity;
+import lk.jiat.butterqueen.ui.UiFeedback;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -130,7 +131,7 @@ public class CustomCakeActivity extends AppCompatActivity {
         photoPreview.setImageDrawable(null);
         photoPreview.setVisibility(View.GONE);
         removePhotoButton.setVisibility(View.GONE);
-        Toast.makeText(this, "Reference photo removed", Toast.LENGTH_SHORT).show();
+        UiFeedback.success(removePhotoButton, "Reference photo removed");
     }
 
     private void submitRequest() {
@@ -200,14 +201,17 @@ public class CustomCakeActivity extends AppCompatActivity {
                     CustomCakeLocalAlert.show(this, "customer_cake_" + doc.getId(),
                             "Custom cake request sent",
                             "The bakery received your request and will review it.");
-                    Toast.makeText(this, "Request sent! The bakery will review it.", Toast.LENGTH_LONG).show();
-                    finish();
+                    UiFeedback.success(submitButton,
+                            "Request received! Your bakery team will review it.");
+                    submitButton.postDelayed(() -> {
+                        if (!isFinishing() && !isDestroyed()) finish();
+                    }, 1250);
                 }).addOnFailureListener(error -> showFailure("Could not submit request: " + error.getMessage()));
     }
 
     private void showFailure(String message) {
         resetSubmitControls();
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+        UiFeedback.error(submitButton, message);
     }
 
     private void resetSubmitControls() {

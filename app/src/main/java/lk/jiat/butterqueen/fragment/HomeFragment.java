@@ -1,4 +1,5 @@
 package lk.jiat.butterqueen.fragment;
+import lk.jiat.butterqueen.ui.UiFeedback;
 
 import android.content.Intent;
 import lk.jiat.butterqueen.notification.NotificationBellController;
@@ -196,13 +197,19 @@ public class HomeFragment extends Fragment implements SensorEventListener {
     }
 
     private void setupActions() {
-        binding.customCakeButton.setOnClickListener(v ->
-                startActivity(new Intent(requireContext(), CustomCakeActivity.class)));
-        binding.myCustomCakeRequestsButton.setOnClickListener(v ->
-                startActivity(new Intent(requireContext(), MyCustomCakeRequestsActivity.class)));
-        binding.orderNowButton.setOnClickListener(v ->
-                binding.recyclerViewCakes.smoothScrollToPosition(0)
-        );
+        binding.customCakeButton.setOnClickListener(v -> {
+            UiFeedback.press(v);
+            startActivity(new Intent(requireContext(), CustomCakeActivity.class));
+        });
+        binding.myCustomCakeRequestsButton.setOnClickListener(v -> {
+            UiFeedback.press(v);
+            startActivity(new Intent(requireContext(), MyCustomCakeRequestsActivity.class));
+        });
+        binding.orderNowButton.setOnClickListener(v -> {
+            UiFeedback.press(v);
+            binding.getRoot().smoothScrollTo(0,
+                    Math.max(0, binding.recyclerViewCakes.getTop() - 20));
+        });
 
         binding.cakeOccasionChips.setOnCheckedStateChangeListener((group, ids) -> {
             int id = group.getCheckedChipId();

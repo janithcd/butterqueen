@@ -1,4 +1,5 @@
 package lk.jiat.butterqueen.adapter;
+import lk.jiat.butterqueen.ui.UiFeedback;
 
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -206,6 +207,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
     }
 
     private void toggleWishlistWithAnimation(ProductViewHolder holder, Product product) {
+        UiFeedback.press(holder.wishlistButton);
         boolean isWishlistedNow = WishlistManager.toggleWishlist(product);
         updateWishlistIcon(holder.wishlistButton, isWishlistedNow);
 
@@ -220,9 +222,8 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
                         .scaleX(1f).scaleY(1f).setDuration(130).start())
                 .start();
 
-        Toast.makeText(holder.itemView.getContext(),
-                isWishlistedNow ? "Added to wishlist" : "Removed from wishlist",
-                Toast.LENGTH_SHORT).show();
+        UiFeedback.success(holder.itemView,
+                isWishlistedNow ? "Saved to your wishlist" : "Removed from your wishlist");
 
         if (wishlistChangedListener != null) {
             int position = holder.getBindingAdapterPosition();

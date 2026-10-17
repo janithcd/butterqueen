@@ -1,4 +1,5 @@
 package lk.jiat.butterqueen.fragment;
+import lk.jiat.butterqueen.ui.UiFeedback;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
@@ -232,7 +233,8 @@ public class ProfileFragment extends Fragment {
                 .addOnSuccessListener(unused -> {
                     updateProfileButton.setEnabled(true);
                     updateProfileButton.setText("Update Profile");
-                    Toast.makeText(requireContext(), "Profile updated successfully", Toast.LENGTH_SHORT).show();
+                    if (isAdded() && getView() != null)
+                        UiFeedback.success(getView(), "Profile saved successfully");
                 })
                 .addOnFailureListener(e -> {
                     updateProfileButton.setEnabled(true);

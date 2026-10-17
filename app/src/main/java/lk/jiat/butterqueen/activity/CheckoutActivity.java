@@ -694,7 +694,7 @@ public class CheckoutActivity extends AppCompatActivity {
                                     String.format(Locale.getDefault(), "Total: Rs. %.2f", totalAmount) +
                                     (note.isEmpty() ? "" : "\n\nNote: " + note);
 
-                    new AlertDialog.Builder(this)
+                    new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
                             .setTitle("ButterQueen")
                             .setMessage(message)
                             .setCancelable(false)

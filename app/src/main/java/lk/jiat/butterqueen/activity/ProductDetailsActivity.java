@@ -1,4 +1,5 @@
 package lk.jiat.butterqueen.activity;
+import lk.jiat.butterqueen.ui.UiFeedback;
 
 import android.os.Bundle;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -78,8 +79,8 @@ public class ProductDetailsActivity extends AppCompatActivity {
             if (selectedProduct == null) return;
             boolean added = WishlistManager.toggleWishlist(selectedProduct);
             updateWishlistIcon();
-            Toast.makeText(this, added ? "Added to wishlist" : "Removed from wishlist",
-                    Toast.LENGTH_SHORT).show();
+            UiFeedback.press(v);
+            UiFeedback.success(v, added ? "Saved to your wishlist" : "Removed from your wishlist");
         });
         minusQtyButton.setOnClickListener(v -> {
             quantity = Math.max(UnitPricing.step(unitType), quantity - UnitPricing.step(unitType));
@@ -212,14 +213,13 @@ public class ProductDetailsActivity extends AppCompatActivity {
             @Override public void onSuccess() {
                 addToCartButton.setEnabled(true);
                 addToCartButton.setText("Add to Cart");
-                Toast.makeText(ProductDetailsActivity.this,
-                        UnitPricing.quantityLabel(quantity, unitType) + " added to cart",
-                        Toast.LENGTH_SHORT).show();
+                UiFeedback.success(addToCartButton,
+                        UnitPricing.quantityLabel(quantity, unitType) + " added to your bag");
             }
             @Override public void onFailure(String message) {
                 addToCartButton.setEnabled(true);
                 addToCartButton.setText("Add to Cart");
-                Toast.makeText(ProductDetailsActivity.this, message, Toast.LENGTH_LONG).show();
+                UiFeedback.error(addToCartButton, message);
             }
         });
     }

@@ -1,4 +1,5 @@
 package lk.jiat.butterqueen.fragment;
+import lk.jiat.butterqueen.ui.UiFeedback;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -81,13 +82,13 @@ public class cartFragment extends Fragment {
                 CartManager.removeItem(position, new CartManager.SimpleCallback() {
                     @Override
                     public void onSuccess() {
+                        if (binding != null) UiFeedback.success(binding.getRoot(),
+                                "Treat removed from your bag");
                     }
 
                     @Override
                     public void onFailure(String message) {
-                        if (isAdded()) {
-                            Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
-                        }
+                        if (binding != null) UiFeedback.error(binding.getRoot(), message);
                     }
                 });
             }
