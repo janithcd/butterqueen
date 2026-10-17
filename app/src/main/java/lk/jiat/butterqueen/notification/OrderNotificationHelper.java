@@ -14,7 +14,7 @@ import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 
 import lk.jiat.butterqueen.R;
-import lk.jiat.butterqueen.activity.MainActivity;
+import lk.jiat.butterqueen.activity.NotificationInboxActivity;
 
 public final class OrderNotificationHelper {
     private static final String CHANNEL_ID = "butterqueen_orders";
@@ -40,17 +40,16 @@ public final class OrderNotificationHelper {
             return;
         }
 
-        Intent intent = new Intent(context, MainActivity.class);
-        intent.putExtra("open_orders", true);
+        Intent intent = new Intent(context, NotificationInboxActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP
                 | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(
-                context, 0, intent,
+                context, orderId == null ? 0 : orderId.hashCode(), intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
         String body = pendingPayment
-                ? "Your order was submitted. Sandbox payment verification is pending."
-                : "Your order has been placed successfully! Tap to view your orders.";
+                ? "Your PayHere sandbox order is recorded. Tap to view activity."
+                : "Your order has been placed! Tap to see it in Notifications.";
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
@@ -61,6 +60,7 @@ public final class OrderNotificationHelper {
                 .setAutoCancel(true)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
-        NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, builder.build());
+        NotificationManagerCompat.from(context).notify(
+                orderId == null ? NOTIFICATION_ID : orderId.hashCode(), builder.build());
     }
 }

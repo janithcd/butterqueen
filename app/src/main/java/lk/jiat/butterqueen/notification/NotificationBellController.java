@@ -36,9 +36,13 @@ public final class NotificationBellController {
     private final String uid;
     private ListenerRegistration inboxRegistration;
     private ListenerRegistration cakeRegistration;
+    private ListenerRegistration orderRegistration;
     private SharedPreferences readPrefs;
+    private SharedPreferences orderReadPrefs;
     private SharedPreferences.OnSharedPreferenceChangeListener readListener;
     private List<SparkCakeNotifications.Notice> cakes = new ArrayList<>();
+    private List<SparkOrderNotifications.Notice> orders = new ArrayList<>();
+    private Set<String> previousOrderKeys;
     private Set<String> previousKeys;
     private int cloudUnread;
     private int previouslyDisplayed;
@@ -89,6 +93,8 @@ public final class NotificationBellController {
         readPrefs = SparkCakeNotifications.getReadPreferences(activity, uid);
         readListener = (preferences, key) -> updateBadge();
         readPrefs.registerOnSharedPreferenceChangeListener(readListener);
+        orderReadPrefs = SparkOrderNotifications.getReadPreferences(activity, uid);
+        orderReadPrefs.registerOnSharedPreferenceChangeListener(readListener);
 
         inboxRegistration = FirebaseFirestore.getInstance()
                 .collection("users").document(uid).collection("notifications")
@@ -97,6 +103,32 @@ public final class NotificationBellController {
                     if (!sameUser()) return;
                     cloudUnread = error == null && snapshot != null ? snapshot.size() : 0;
                     updateBadge();
+                });
+        orderRegistration = SparkOrderNotifications.watch(uid, admin,
+                new SparkOrderNotifications.Listener() {
+                    @Override
+                    public void onNotices(List<SparkOrderNotifications.Notice> notices) {
+                        if (!sameUser()) return;
+                        Set<String> keys = new HashSet<>();
+                        for (SparkOrderNotifications.Notice notice : notices) keys.add(notice.key);
+                        if (previousOrderKeys != null) {
+                            for (SparkOrderNotifications.Notice notice : notices) {
+                                if (!previousOrderKeys.contains(notice.key)
+                                        && !SparkOrderNotifications.isRead(activity, uid, notice)) {
+                                    CustomCakeLocalAlert.show(activity, uid + "_" + notice.key,
+                                            notice.title, notice.body);
+                                }
+                            }
+                        }
+                        previousOrderKeys = keys;
+                        orders = notices;
+                        updateBadge();
+                    }
+
+                    @Override
+                    public void onError(Exception error) {
+                        if (sameUser()) updateBadge();
+                    }
                 });
         cakeRegistration = SparkCakeNotifications.watch(uid, admin,
                 new SparkCakeNotifications.Listener() {
@@ -144,7 +176,8 @@ public final class NotificationBellController {
             badge.setVisibility(View.GONE);
             return;
         }
-        int count = cloudUnread + SparkCakeNotifications.unread(activity, uid, cakes);
+        int count = cloudUnread + SparkCakeNotifications.unread(activity, uid, cakes)
+                + SparkOrderNotifications.unread(activity, uid, orders);
         badge.setVisibility(count > 0 ? View.VISIBLE : View.GONE);
         badge.setText(count > 99 ? "99+" : String.valueOf(count));
         if (count > previouslyDisplayed) {
@@ -159,10 +192,14 @@ public final class NotificationBellController {
     public void close() {
         if (inboxRegistration != null) inboxRegistration.remove();
         if (cakeRegistration != null) cakeRegistration.remove();
+        if (orderRegistration != null) orderRegistration.remove();
         inboxRegistration = null;
         cakeRegistration = null;
+        orderRegistration = null;
         if (readPrefs != null && readListener != null)
             readPrefs.unregisterOnSharedPreferenceChangeListener(readListener);
+        if (orderReadPrefs != null && readListener != null)
+            orderReadPrefs.unregisterOnSharedPreferenceChangeListener(readListener);
         host.removeAllViews();
     }
 }

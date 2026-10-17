@@ -39,6 +39,8 @@
             </intent-filter>
         </service>
         <activity android:name=".activity.NotificationInboxActivity" android:exported="false" />
+        <activity android:name=".activity.AdminCategoriesActivity" android:exported="false" />
+        <activity android:name=".activity.AdminReviewsActivity" android:exported="false" />
         <activity android:name=".activity.AdminOverviewActivity" android:exported="false" />
         <activity
             android:name=".activity.AdminDashboardActivity"

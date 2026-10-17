@@ -140,7 +140,7 @@ service cloud.firestore {
           && validContent()
           && request.resource.data.updatedAt == request.time;
 
-        allow delete: if false;
+        allow delete: if isAdmin();
       }
     }
 
