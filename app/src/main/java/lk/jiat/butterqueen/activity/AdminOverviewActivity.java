@@ -581,10 +581,10 @@ public class AdminOverviewActivity extends AppCompatActivity {
             new AlertDialog.Builder(this)
                     .setTitle("Card payment not verified")
                     .setMessage("Order #" + shortId + " cannot be prepared or delivered " +
-                            "until PayHere confirms its payment.\\n\\n" +
+                            "until PayHere confirms its payment.\n\n" +
                             "Payment status: " + (payment == null ? "Unknown" : payment) +
-                            "\\nPayHere reference: " + (reference == null ? "Unavailable" : reference) +
-                            "\\n\\nCheck the transaction in PayHere, then tap Refresh. " +
+                            "\nPayHere reference: " + (reference == null ? "Unavailable" : reference) +
+                            "\n\nCheck the transaction in PayHere, then tap Refresh. " +
                             "This screen cannot confirm a payment.")
                     .setNegativeButton("Close", null)
                     .setNeutralButton("Cancel order", (d, w) ->
