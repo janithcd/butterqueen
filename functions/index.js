@@ -7,6 +7,11 @@
  */
 const {onDocumentCreated, onDocumentUpdated} =
     require("firebase-functions/v2/firestore");
+const {onRequest} = require("firebase-functions/v2/https");
+const {defineSecret} = require("firebase-functions/params");
+const {FieldValue} = require("firebase-admin/firestore");
+const {verifyNotification, sameAmount, parseNotificationBody} =
+    require("./payhereVerification");
 const {initializeApp} = require("firebase-admin/app");
 const {getFirestore} = require("firebase-admin/firestore");
 const {getMessaging} = require("firebase-admin/messaging");
@@ -15,6 +20,97 @@ initializeApp();
 const db = getFirestore();
 const messaging = getMessaging();
 const REGION = "asia-south1";
+const PAYHERE_MERCHANT_ID = defineSecret("PAYHERE_MERCHANT_ID");
+const PAYHERE_MERCHANT_SECRET = defineSecret("PAYHERE_MERCHANT_SECRET");
+
+/**
+ * Public HTTPS PayHere notify_url. Only signed PayHere notifications can
+ * promote a card order to "paid". Merchant credentials never enter Android.
+ * Deploy and configure both Firebase secrets before making sandbox payments.
+ */
+exports.payHereNotify = onRequest({
+  region: REGION,
+  secrets: [PAYHERE_MERCHANT_ID, PAYHERE_MERCHANT_SECRET],
+}, async (req, res) => {
+  if (req.method !== "POST") {
+    res.status(405).send("Method not allowed");
+    return;
+  }
+  if (!String(req.headers["content-type"] || "").toLowerCase()
+      .startsWith("application/x-www-form-urlencoded")) {
+    res.status(415).send("Expected form-urlencoded notification");
+    return;
+  }
+
+  const fields = parseNotificationBody(req.body || req.rawBody);
+  if (!verifyNotification(fields, PAYHERE_MERCHANT_ID.value(),
+      PAYHERE_MERCHANT_SECRET.value())) {
+    res.status(403).send("Invalid payment signature");
+    return;
+  }
+
+  // Successful Checkout payment only. A failed/pending/authorized status
+  // must never release a product order for fulfilment.
+  if (fields.status_code !== "2") {
+    res.status(200).send("Payment not completed");
+    return;
+  }
+  if (fields.payhere_currency !== "LKR") {
+    res.status(409).send("Currency mismatch");
+    return;
+  }
+  if (fields.order_id.length > 160) {
+    res.status(400).send("Invalid order reference");
+    return;
+  }
+
+  try {
+    const matchingOrders = await db.collection("orders")
+        .where("paymentReference", "==", fields.order_id).limit(2).get();
+    if (matchingOrders.size !== 1) {
+      // A callback can legitimately arrive before an order is committed by
+      // a previous app version. Do not mark an unknown order as paid.
+      res.status(503).send("Order not ready for verification");
+      return;
+    }
+    const ref = matchingOrders.docs[0].ref;
+    await db.runTransaction(async (tx) => {
+      const snapshot = await tx.get(ref);
+      if (!snapshot.exists) throw new Error("Order no longer exists");
+      const order = snapshot.data();
+      if (order.paymentMethod !== "payhere" ||
+          order.paymentReference !== fields.order_id ||
+          !sameAmount(fields.payhere_amount, order.totalAmount)) {
+        const error = new Error("Order payment data mismatch");
+        error.code = "PAYMENT_MISMATCH";
+        throw error;
+      }
+      if (order.paymentStatus === "paid") return; // Duplicate webhook.
+      if (order.paymentStatus === "chargeback") return; // Never re-enable it.
+
+      const updates = {
+        paymentStatus: "paid",
+        paymentVerifiedAt: FieldValue.serverTimestamp(),
+      };
+      if (typeof fields.payment_id === "string" &&
+          fields.payment_id.length <= 160) {
+        updates.payHerePaymentId = fields.payment_id;
+      }
+      // Respect an order the admin already cancelled; a real paid but
+      // cancelled order may need an external refund.
+      if (order.orderStatus === "payment_pending") {
+        updates.orderStatus = "placed";
+      }
+      tx.update(ref, updates);
+    });
+    res.status(200).send("Verified");
+  } catch (error) {
+    console.error("PayHere payment verification failed", {code: error.code || "unknown"});
+    res.status(error.code === "PAYMENT_MISMATCH" ? 409 : 500)
+        .send("Payment verification could not be completed");
+  }
+});
+
 
 function statusLabel(s) {
   const known = {
