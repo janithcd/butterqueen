@@ -48,13 +48,13 @@
         android:textColor="@color/md_theme_onSurfaceVariant" />
     <com.google.android.material.button.MaterialButton
         android:id="@+id/adminCustomRequestsRefresh"
-        style="@style/Widget.Material3.Button.OutlinedButton"
+        style="@style/Widget.ButterQueen.Button.Outlined"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
         android:layout_marginTop="12dp"
         android:layout_marginBottom="6dp"
-        android:text="↻ Refresh requests"
+        android:text="Refresh requests"
         android:textAllCaps="false" />
 
     <TextView

@@ -62,10 +62,11 @@
                 android:textSize="14sp" />
 
             <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.ButterQueen.Card"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="18dp"
-                app:cardCornerRadius="18dp"
+                app:cardCornerRadius="20dp"
                 app:cardBackgroundColor="@color/md_theme_primaryContainer" app:strokeColor="@color/md_theme_outlineVariant" app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -154,6 +155,7 @@
         android:orientation="horizontal">
 
         <com.google.android.material.button.MaterialButton
+            style="@style/Widget.ButterQueen.Button.Primary"
             android:id="@+id/receiptDownload"
             android:layout_width="0dp"
             android:layout_height="52dp"
@@ -166,7 +168,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/receiptShare"
-            style="@style/Widget.Material3.Button.OutlinedButton"
+            style="@style/Widget.ButterQueen.Button.Outlined"
             android:layout_width="0dp"
             android:layout_height="52dp"
             android:layout_weight="1"
@@ -179,7 +181,7 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/receiptCopyJson"
-        style="@style/Widget.Material3.Button.TextButton"
+        style="@style/Widget.ButterQueen.Button.Text"
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:layout_marginStart="20dp"

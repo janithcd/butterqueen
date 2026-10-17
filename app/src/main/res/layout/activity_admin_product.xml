@@ -118,6 +118,7 @@
             android:checked="true"
             android:text="Available to customers" />
         <com.google.android.material.button.MaterialButton
+            style="@style/Widget.ButterQueen.Button.Primary"
             android:id="@+id/adminSaveProductButton"
             android:layout_width="match_parent"
             android:layout_height="56dp"

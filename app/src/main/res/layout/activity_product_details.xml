@@ -140,7 +140,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/viewProductReviewsButton"
-                style="@style/Widget.Material3.Button.OutlinedButton"
+                style="@style/Widget.ButterQueen.Button.Outlined"
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
                 android:layout_marginTop="12dp"
@@ -211,6 +211,7 @@
                 android:textStyle="bold" />
 
             <com.google.android.material.button.MaterialButton
+            style="@style/Widget.ButterQueen.Button.Primary"
                 android:id="@+id/addToCartButton"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
@@ -218,7 +219,7 @@
                 android:text="Add to Cart"
                 android:textAllCaps="false"
                 android:textSize="16sp"
-                app:cornerRadius="18dp" />
+                app:cornerRadius="16dp" />
 
         </LinearLayout>
 

@@ -54,7 +54,7 @@
             app:selectionRequired="true">
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/adminProductsTab"
-                style="@style/Widget.Material3.Button.OutlinedButton"
+                style="@style/Widget.ButterQueen.Button.Outlined"
                 android:layout_width="0dp"
                 android:layout_height="48dp"
                 android:layout_weight="1"
@@ -63,7 +63,7 @@
                 android:textAllCaps="false" />
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/adminOrdersTab"
-                style="@style/Widget.Material3.Button.OutlinedButton"
+                style="@style/Widget.ButterQueen.Button.Outlined"
                 android:layout_width="0dp"
                 android:layout_height="48dp"
                 android:layout_weight="1"
@@ -76,6 +76,7 @@
             android:layout_marginTop="12dp"
             android:orientation="horizontal">
             <com.google.android.material.button.MaterialButton
+            style="@style/Widget.ButterQueen.Button.Primary"
                 android:id="@+id/adminAddProductButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -83,7 +84,7 @@
                 android:textAllCaps="false" />
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/adminAddCategoryButton"
-                style="@style/Widget.Material3.Button.OutlinedButton"
+                style="@style/Widget.ButterQueen.Button.Outlined"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
@@ -92,14 +93,14 @@
         </LinearLayout>
         <com.google.android.material.button.MaterialButton
             android:id="@+id/adminStarterButton"
-            style="@style/Widget.Material3.Button.TextButton"
+            style="@style/Widget.ButterQueen.Button.Text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Set up Cakes, Cupcakes and Brownies"
             android:textAllCaps="false" />
         <com.google.android.material.button.MaterialButton
             android:id="@+id/adminCustomCakeRequestsButton"
-            style="@style/Widget.Material3.Button.OutlinedButton"
+            style="@style/Widget.ButterQueen.Button.Outlined"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
@@ -107,7 +108,7 @@
             android:textAllCaps="false" />
         <com.google.android.material.button.MaterialButton
             android:id="@+id/adminSalesReportsButton"
-            style="@style/Widget.Material3.Button.OutlinedButton"
+            style="@style/Widget.ButterQueen.Button.Outlined"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"

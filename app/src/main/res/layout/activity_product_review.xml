@@ -54,6 +54,7 @@
             android:textSize="17sp" />
 
         <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.ButterQueen.Card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
@@ -93,7 +94,7 @@
                     android:stepSize="1.0"
                     android:contentDescription="Select one to five stars" />
                 <com.google.android.material.textfield.TextInputLayout
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    style="@style/Widget.ButterQueen.TextField"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="14dp"
@@ -109,6 +110,7 @@
                         android:maxLines="6" />
                 </com.google.android.material.textfield.TextInputLayout>
                 <com.google.android.material.button.MaterialButton
+            style="@style/Widget.ButterQueen.Button.Primary"
                     android:id="@+id/reviewSubmit"
                     android:layout_width="match_parent"
                     android:layout_height="52dp"
