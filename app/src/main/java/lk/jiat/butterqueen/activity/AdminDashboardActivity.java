@@ -189,7 +189,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
                         String title = value(doc.getString("customerName")) + " • "
                                 + doc.getId().substring(0, Math.min(6, doc.getId().length()));
                         String detail = date + " • " + value(doc.getString("orderStatus"))
-                                + " • " + value(payment);
+                                + " • " + paymentLabel(payment);
                         Double total = doc.getDouble("totalAmount");
                         MaterialCardView card = addCard(title, detail,
                                 String.format(Locale.getDefault(), "Rs. %.2f",
@@ -209,7 +209,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
                             .append("\nPhone: ").append(value(order.getString("customerPhone")))
                             .append("\nAddress: ").append(value(order.getString("deliveryAddress")))
                             .append("\nPayment: ").append(value(order.getString("paymentMethod")))
-                            .append(" / ").append(value(order.getString("paymentStatus")))
+                            .append(" / ").append(paymentLabel(order.getString("paymentStatus")))
                             .append("\nStatus: ").append(value(order.getString("orderStatus")))
                             .append("\n\nItems:");
                     for (DocumentSnapshot doc : snapshot) {
@@ -523,6 +523,12 @@ public class AdminDashboardActivity extends AppCompatActivity {
 
     private int dp(int value) {
         return (int) (getResources().getDisplayMetrics().density * value + 0.5f);
+    }
+
+    private String paymentLabel(String status) {
+        return SandboxOrderPolicy.DEMO_PAYMENT_STATUS.equals(status)
+                ? "Sandbox demo — not paid"
+                : value(status);
     }
 
     private String value(String text) {
