@@ -263,10 +263,10 @@ public class AdminDashboardActivity extends AppCompatActivity {
             new AlertDialog.Builder(this)
                     .setTitle("Card payment not verified")
                     .setMessage("PayHere hasn't verified this order yet. Only verified " +
-                            "card orders can be prepared or delivered.\\n\\n" +
+                            "card orders can be prepared or delivered.\n\n" +
                             "Payment status: " + value(paymentStatus) +
-                            "\\nPayHere reference: " + value(order.getString("paymentReference")) +
-                            "\\n\\nCheck PayHere for this reference, then Refresh.")
+                            "\nPayHere reference: " + value(order.getString("paymentReference")) +
+                            "\n\nCheck PayHere for this reference, then Refresh.")
                     .setNegativeButton("Close", null)
                     .setNeutralButton("Cancel order", (d, w) ->
                             confirmOrderStatus(order, "cancelled", "Cancelled"))
